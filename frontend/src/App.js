@@ -1,19 +1,15 @@
-import { useEffect, useState } from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import SignIn from "./pages/SignIn";
 
 function App() {
-  const [message, setMessage] = useState("Loading...");
-
-  useEffect(() => {
-    fetch("http://127.0.0.1:8000/")
-      .then((res) => res.json())
-      .then((data) => setMessage(data.message))
-      .catch((err) => {
-        console.error("Fetch error:", err);
-        setMessage("Error fetching data");
-      });
-  }, []);
-
-  return <h1>{message}</h1>;
+  return (
+    <Router>
+      <Routes>
+        <Route path="/" element={<h1>Welcome to the Social Platform API</h1>} />
+        <Route path="/signin" element={<SignIn />} />
+      </Routes>
+    </Router>
+  );
 }
 
 export default App;
