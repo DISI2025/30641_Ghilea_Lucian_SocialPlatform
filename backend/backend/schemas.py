@@ -1,9 +1,16 @@
-from _pydatetime import datetime
+from datetime import datetime
 
 from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime, date
 
+class UserCreate(BaseModel):
+    nume: str
+    prenume: str
+    email: str
+    parola: str
+    data_nasterii: Optional[date]
+    bio: Optional[str] = None
 
 class UserProfileUpdate(BaseModel):
     nume: Optional[str] = None
