@@ -114,3 +114,89 @@
   .login-link a:hover {
     text-decoration: underline;
   }
+
+  /* Add these to your existing SignIn.css */
+
+.password-result {
+    margin-top: 20px;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    text-align: center;
+  }
+  
+  .password-result h4 {
+    margin-bottom: 10px;
+    color: #333;
+  }
+  
+  .new-password {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: white;
+    padding: 10px 15px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-family: monospace;
+    font-size: 16px;
+    margin-bottom: 10px;
+  }
+  
+  .copy-btn {
+    background: #4a90e2;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background 0.2s;
+  }
+  
+  .copy-btn:hover {
+    background: #3a7bc8;
+  }
+  
+  .password-warning {
+    color: #d32f2f;
+    font-size: 13px;
+    margin-top: 5px;
+    font-weight: 500;
+  }
+
+  /* Add these to your existing SignIn.css */
+
+.forgot-password {
+    text-align: right;
+    margin-top: -10px;
+    margin-bottom: 15px;
+  }
+  
+  .forgot-password a {
+    color: #666;
+    font-size: 14px;
+    text-decoration: none;
+  }
+  
+  .forgot-password a:hover {
+    color: #4a90e2;
+    text-decoration: underline;
+  }
+  
+  .register-link {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 14px;
+    color: #555;
+  }
+  
+  .register-link a {
+    color: #4a90e2;
+    text-decoration: none;
+    font-weight: 500;
+  }
+  
+  .register-link a:hover {
+    text-decoration: underline;
+  }
