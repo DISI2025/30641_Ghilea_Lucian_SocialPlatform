@@ -1,3 +1,4 @@
+
 from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session
@@ -21,6 +22,10 @@ from datetime import date
 
 # Create tables if they don't exist
 backend.models.Base.metadata.create_all(bind=engine)
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+
 
 app = FastAPI()
 
@@ -33,7 +38,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# DB dependency
+
 def get_db():
     db = SessionLocal()
     try:
@@ -91,7 +96,20 @@ def get_photo(photo_id: int, db: Session = Depends(get_db)):
     if not photo or not photo.image_data:
         raise HTTPException(status_code=404, detail="Photo not found")
     return Response(content=photo.image_data, media_type="image/jpeg")
-
 @app.get("/")
 def read_root():
     return {"message": "Welcome to the Social Platform API"}
+
+
+class SignInData(BaseModel):
+    email: str
+    password: str
+
+
+@app.post("/signin")
+def signin(data: SignInData):
+    # Exemplu simplu de validare
+    if data.email == "admin@example.com" and data.password == "1234":
+        return {"message": "Autentificare reușită!"}
+
+    raise HTTPException(status_code=401, detail="Email sau parolă greșită")
