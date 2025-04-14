@@ -3,6 +3,10 @@ import SignIn from "./pages/SignIn";
 import Register from "./pages/Register";
 import ResetPassword from "./pages/ResetPassword";
 import Profile from "./pages/Profile"
+import ProfileMock from "./pages/ProfileMock"
+import ChatPage from './pages/ChatPage';
+import FriendsList from './pages/FriendsList';
+
 function App() {
   return (
     <Router>
@@ -12,6 +16,9 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/profile/:userId?" element={<Profile />} />
+        <Route path="/profile-mock" element={<ProfileMock />} />
+        <Route path="/chat" element={<ChatPage />} />
+        <Route path="/friends" element={<FriendsList />} />
       </Routes>
     </Router>
   );
