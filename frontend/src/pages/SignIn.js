@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { Link } from "react-router-dom"; // Import Link for navigation
+import "./SignIn.css"; // Your existing CSS file
 
 function SignIn() {
   const [email, setEmail] = useState("");
@@ -64,6 +66,10 @@ function SignIn() {
           >
             {isLoading ? 'Se încarcă...' : 'Autentificare'}
           </button>
+
+          <div className="forgot-password">
+            <Link to="/reset-password">Ai uitat parola?</Link>
+          </div>
         </form>
         
         {message && (
@@ -71,6 +77,10 @@ function SignIn() {
             {message}
           </div>
         )}
+
+        <div className="register-link">
+          Nu ai cont? <Link to="/register">Înregistrează-te</Link>
+        </div>
       </div>
     </div>
   );
