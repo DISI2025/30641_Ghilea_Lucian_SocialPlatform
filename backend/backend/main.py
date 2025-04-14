@@ -1,5 +1,26 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends, HTTPException
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker, Session
+import backend.models, backend.schemas
+import psycopg2
+import os
+from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import Response
+from backend.schemas import PhotoCreate
+from backend.models import Foto, Base
+from backend.database import SessionLocal, engine
+from datetime import date
+
+# # Database connection string (adjust if necessary)
+# DATABASE_URL = "postgresql://postgres:admin@localhost:5432/postgres"
+#
+# # Create an engine and session
+# engine = create_engine(DATABASE_URL)
+# SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+# Create tables if they don't exist
+backend.models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
@@ -11,6 +32,65 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# DB dependency
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+@app.get("/profile/{id_user}", response_model=backend.schemas.UserProfileResponse)
+def get_profile(id_user: int, db: Session = Depends(get_db)):
+    user = db.query(backend.models.User).filter(backend.models.User.id_user == id_user).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return user
+
+@app.post("/profile/{id_user}")
+def update_profile(id_user: int, profile: backend.schemas.UserProfileUpdate, db: Session = Depends(get_db)):
+    user = db.query(backend.models.User).filter(backend.models.User.id_user == id_user).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    if profile.nume is not None:
+        user.nume = profile.nume
+    if profile.data_nasterii is not None:
+        user.data_nasterii = profile.data_nasterii
+    if profile.bio is not None:
+        user.bio = profile.bio
+
+    db.commit()
+    return {"message": "Profile updated successfully"}
+
+@app.post("/upload_photo_json/")
+def upload_photo(photo: PhotoCreate, db: Session = Depends(get_db)):
+    if not os.path.isfile(photo.image_data):
+        raise HTTPException(status_code=400, detail="Image path not found")
+
+    with open(photo.image_data, "rb") as file:
+        image_bytes = file.read()
+
+    new_photo = Foto(
+        id_user=photo.id_user,
+        caption=photo.caption,
+        status=photo.status,
+        image_data=image_bytes
+    )
+
+    db.add(new_photo)
+    db.commit()
+    db.refresh(new_photo)
+
+    return {"message": "Photo uploaded", "photo_id": new_photo.id}
+
+@app.get("/get_photo/{photo_id}")
+def get_photo(photo_id: int, db: Session = Depends(get_db)):
+    photo = db.query(Foto).filter(Foto.id == photo_id).first()
+    if not photo or not photo.image_data:
+        raise HTTPException(status_code=404, detail="Photo not found")
+    return Response(content=photo.image_data, media_type="image/jpeg")
 
 @app.get("/")
 def read_root():
