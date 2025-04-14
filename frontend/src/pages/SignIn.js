@@ -4,9 +4,12 @@ function SignIn() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    setIsLoading(true);
+    setMessage("");
 
     fetch("http://127.0.0.1:8000/signin", {
       method: "POST",
@@ -17,34 +20,58 @@ function SignIn() {
         if (!res.ok) throw new Error("Eroare la autentificare");
         return res.json();
       })
-      .then((data) => setMessage(data.message))
+      .then((data) => setMessage(data.message || "Autentificare reușită!"))
       .catch((err) => {
         console.error(err);
-        setMessage("Autentificare eșuată");
-      });
+        setMessage(err.message || "Autentificare eșuată");
+      })
+      .finally(() => setIsLoading(false));
   };
 
   return (
-    <div style={{ padding: "2rem" }}>
-      <h2>Sign In</h2>
-      <form onSubmit={handleSubmit}>
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        /><br /><br />
-        <input
-          type="password"
-          placeholder="Parola"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        /><br /><br />
-        <button type="submit">Autentificare</button>
-      </form>
-      <p>{message}</p>
+    <div className="signin-container">
+      <div className="signin-card">
+        <h2 className="signin-title">Autentificare</h2>
+        <form onSubmit={handleSubmit} className="signin-form">
+          <div className="form-group">
+            <label htmlFor="email">Email</label>
+            <input
+              id="email"
+              type="email"
+              placeholder="Introdu adresa de email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </div>
+          
+          <div className="form-group">
+            <label htmlFor="password">Parolă</label>
+            <input
+              id="password"
+              type="password"
+              placeholder="Introdu parola"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </div>
+          
+          <button 
+            type="submit" 
+            className="submit-btn"
+            disabled={isLoading}
+          >
+            {isLoading ? 'Se încarcă...' : 'Autentificare'}
+          </button>
+        </form>
+        
+        {message && (
+          <div className={`message ${message.includes("eșuată") ? "error" : "success"}`}>
+            {message}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
