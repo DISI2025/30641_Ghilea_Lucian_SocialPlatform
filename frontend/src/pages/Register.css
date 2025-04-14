@@ -1,0 +1,19 @@
+/* All SignIn.css styles remain the same */
+/* Add these additional styles at the bottom */
+
+.login-link {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 14px;
+    color: #555;
+  }
+  
+  .login-link a {
+    color: #4a90e2;
+    text-decoration: none;
+    font-weight: 500;
+  }
+  
+  .login-link a:hover {
+    text-decoration: underline;
+  }

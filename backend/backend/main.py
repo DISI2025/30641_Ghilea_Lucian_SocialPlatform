@@ -2,15 +2,15 @@
 from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session
-import backend.models, backend.schemas
+import models, schemas
 import psycopg2
 import os
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response
-from backend.schemas import PhotoCreate
-from backend.models import Foto, Base
-from backend.database import SessionLocal, engine
+from schemas import PhotoCreate
+from models import Foto, Base
+from database import SessionLocal, engine
 from datetime import date
 
 # # Database connection string (adjust if necessary)
@@ -21,7 +21,7 @@ from datetime import date
 # SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 # Create tables if they don't exist
-backend.models.Base.metadata.create_all(bind=engine)
+models.Base.metadata.create_all(bind=engine)
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
