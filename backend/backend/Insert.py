@@ -29,11 +29,11 @@ insert_query = text("""
 """)
 
 params = {
-    "id_user": "12345",
-    "nume": "Popescu",
-    "prenume": "Andrei",
-    "email": "andrei.popescu@example.com",
-    "hash_parola": "parola",
+    "id_user": "123456",
+    "nume": "Popescu6",
+    "prenume": "Andrei6",
+    "email": "andrei6.popescu@example.com",
+    "hash_parola": "parola6",
     "data_nasterii": date(1990, 5, 15),
     "id_poza_profil": None,
     "bio": "Salut, sunt Andrei!",

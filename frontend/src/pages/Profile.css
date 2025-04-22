@@ -209,3 +209,30 @@
       gap: 2px;
     }
   }
+
+  .upload-form {
+    margin: 20px 0;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+  
+  .upload-form input[type="file"] {
+    flex: 1;
+  }
+  
+  .upload-form button {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+  }
+  
+  .upload-form button:hover {
+    background-color: #218838;
+  }
+  
