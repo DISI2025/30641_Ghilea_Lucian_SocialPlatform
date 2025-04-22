@@ -6,6 +6,7 @@ import Profile from "./pages/Profile"
 import ProfileMock from "./pages/ProfileMock"
 import ChatPage from './pages/ChatPage';
 import FriendsList from './pages/FriendsList';
+import CreatePost from "./pages/CreatePost";
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
         <Route path="/profile-mock" element={<ProfileMock />} />
         <Route path="/chat" element={<ChatPage />} />
         <Route path="/friends" element={<FriendsList />} />
+        <Route path="/create-post" element={<CreatePost />} />
       </Routes>
     </Router>
   );
