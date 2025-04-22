@@ -235,4 +235,134 @@
   .upload-form button:hover {
     background-color: #218838;
   }
+  .friend-requests {
+    margin: 20px 0;
+    background: #f5f5f5;
+    padding: 15px;
+    border-radius: 12px;
+  }
+  
+  .friend-requests h3 {
+    margin-bottom: 10px;
+  }
+  
+  .friend-requests ul {
+    list-style: none;
+    padding: 0;
+  }
+  
+  .friend-requests li {
+    padding: 5px 0;
+    border-bottom: 1px solid #ddd;
+  }
+  
+
+.edit-avatar-btn {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  background: rgba(0, 0, 0, 0.5);
+  border: none;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.edit-avatar-btn:hover {
+  background: rgba(0, 0, 0, 0.7);
+}
+
+.profile-avatar {
+  position: relative;
+}
+
+.upload-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.upload-modal-content {
+  background: white;
+  padding: 25px;
+  border-radius: 10px;
+  width: 90%;
+  max-width: 400px;
+  text-align: center;
+}
+
+.avatar-preview {
+  width: 200px;
+  height: 200px;
+  margin: 20px auto;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 1px solid #ddd;
+}
+
+.avatar-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.upload-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.btn-select, .btn-upload, .btn-cancel {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.btn-select {
+  background: #0095f6;
+  color: white;
+}
+
+.btn-upload {
+  background: #0095f6;
+  color: white;
+  opacity: 0.7;
+}
+
+.btn-upload:not(:disabled) {
+  opacity: 1;
+}
+
+.btn-cancel {
+  background: #efefef;
+  color: #262626;
+}
+
+.btn-select:hover {
+  background: #0077cc;
+}
+
+.btn-upload:not(:disabled):hover {
+  background: #0077cc;
+}
+
+.btn-cancel:hover {
+  background: #dbdbdb;
+}
   
