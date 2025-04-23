@@ -114,7 +114,22 @@ def reset_password(request: ResetPasswordRequest, db: Session = Depends(get_db))
     db.commit()
 
     return {"message": "Password reset successfully", "new_password": new_password}
+#returneaza o lista de prieteni
+@app.get("/getfriends/{id_user}", response_model=list[FriendInfo])
+def get_friends(id_user: int, db: Session = Depends(get_db)):
+    friendships = db.query(Friendships).filter(
+        (Friendships.id_user1 == id_user) | (Friendships.id_user2 == id_user)
+    ).all()
 
+    friend_ids = [
+        f.id_user2 if f.id_user1 == id_user else f.id_user1 for f in friendships
+    ]
+
+    if not friend_ids:
+        return []
+    friends = db.query(User).filter(User.id_user.in_(friend_ids)).all()
+
+    return friends
 
 
 
