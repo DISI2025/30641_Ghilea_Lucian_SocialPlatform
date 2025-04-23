@@ -165,11 +165,26 @@ def accept_friend_request(id_receiver: int, id_sender: int, db: Session = Depend
     friendship = Friendships(
         id_user1=min(id_sender, id_receiver),
         id_user2=max(id_sender, id_receiver),
-        created_at=datetime.utcnow()
+        created_at=datetime()
     )
     db.add(friendship)
     db.commit()
     return {"message": "Friend request accepted"}
+@app.post("/decline_friendrequest/{id_receiver}/{id_sender}")
+def decline_friend_request(id_receiver: int, id_sender: int, db: Session = Depends(get_db)):
+    request = db.query(FriendRequest).filter(
+        FriendRequest.id_sender == id_sender,
+        FriendRequest.id_receiver == id_receiver,
+        FriendRequest.status == "pending"
+    ).first()
+
+    if not request:
+        raise HTTPException(status_code=404, detail="Friend request not found")
+
+    request.status = "declined"
+    db.commit()
+
+    return {"message": "Friend request declined"}
 
 @app.get("/")
 def read_root():
