@@ -1,7 +1,7 @@
 from sqlalchemy import create_engine, text
 from datetime import date, datetime, timedelta
 
-DATABASE_URL = "postgresql://postgres:admin@localhost:5432/postgres"
+DATABASE_URL = "postgresql://postgres:postgres@localhost:5432/postgres"
 engine = create_engine(DATABASE_URL)
 
 users = [
@@ -16,6 +16,7 @@ users = [
     #     "bio": "Salut, sunt Andrei!",
     #     "moderator": False
     # },
+
     # {
     #     "id_user": 12346,
     #     "nume": "Dragomir",
@@ -43,6 +44,11 @@ users = [
         "nume": "Dance",
         "prenume": "Andreea",
         "email": "andreea.dance@example.com",
+    {
+        "id_user": 12346,
+        "nume": "Dragomir",
+        "prenume": "Maria",
+        "email": "maria.dragomir@example.com",
         "hash_parola": "parola123",
         "data_nasterii": date(2000, 5, 15),
         "id_poza_profil": None,
