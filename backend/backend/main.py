@@ -18,6 +18,7 @@ from backend.models import User, Friendships, FriendRequest  # adjust based on y
 from backend.schemas import FriendInfo
 from typing import List
 from sqlalchemy import desc
+from datetime import datetime
 
 # # Database connection string (adjust if necessary)
 # DATABASE_URL = "postgresql://postgres:admin@localhost:5432/postgres"
@@ -149,7 +150,26 @@ def get_pending_friend_requests(id_user: int, db: Session = Depends(get_db)):
 
     return pending_requests
 
+@app.post("/accept_friendrequest/{id_receiver}/{id_sender}")
+def accept_friend_request(id_receiver: int, id_sender: int, db: Session = Depends(get_db)):
+    request = db.query(FriendRequest).filter(
+        FriendRequest.id_sender == id_sender,
+        FriendRequest.id_receiver == id_receiver,
+        FriendRequest.status == "pending"
+    ).first()
 
+    if not request:
+        raise HTTPException(status_code=404, detail="Friend request not found")
+
+    request.status = "accepted"
+    friendship = Friendships(
+        id_user1=min(id_sender, id_receiver),
+        id_user2=max(id_sender, id_receiver),
+        created_at=datetime.utcnow()
+    )
+    db.add(friendship)
+    db.commit()
+    return {"message": "Friend request accepted"}
 
 @app.get("/")
 def read_root():
