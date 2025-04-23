@@ -1,10 +1,12 @@
 from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.orm import Session
 from passlib.context import CryptContext
-from backend.database import SessionLocal
-from backend.models import User
-from backend.schemas import UserCreate
-from backend.passwords import hash_password
+from database import SessionLocal
+from models import User
+from schemas import UserCreate
+from passwords import hash_password
+from schemas import UserLogin
+from passwords import verify_password
 
 router = APIRouter()
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -39,3 +41,20 @@ def register(user_data: UserCreate, db: Session = Depends(get_db)):
     db.refresh(new_user)
 
     return {"message": "Utilizator înregistrat cu succes", "user_id": new_user.id_user}
+
+@router.post("/login")
+def login(credentials: UserLogin, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.email == credentials.email).first()
+    if not user:
+        raise HTTPException(status_code=401, detail="Email sau parolă incorecte")
+
+    if not verify_password(credentials.parola, user.hash_parola):
+        raise HTTPException(status_code=401, detail="Email sau parolă incorecte")
+
+    return {
+        "message": "Te-ai conectat, man",
+        "user_id": user.id_user,
+        "nume": user.nume,
+        "prenume": user.prenume,
+        "email": user.email
+    }
