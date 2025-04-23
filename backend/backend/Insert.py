@@ -1,7 +1,7 @@
 from sqlalchemy import create_engine, text
 from datetime import date
 
-DATABASE_URL = "postgresql://postgres:admin@localhost:5432/postgres"
+DATABASE_URL = "postgresql://postgres:postgres@localhost:5432/postgres"
 engine = create_engine(DATABASE_URL)
 
 insert_query = text("""

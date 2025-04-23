@@ -1,19 +1,22 @@
+
 from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session
-import backend.models, backend.schemas
+import models, schemas
 import psycopg2
 import os
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response
-from backend.schemas import PhotoCreate
-from backend.models import Foto, Base
-from backend.database import SessionLocal, engine
+from schemas import PhotoCreate
+from models import Foto, Base
+from database import SessionLocal, engine
 from datetime import date
 from backend.password import generate_random_password, hash_password
 from backend.schemas import ResetPasswordRequest
 from backend.models import User
+from routes import users
+
 
 # # Database connection string (adjust if necessary)
 # DATABASE_URL = "postgresql://postgres:admin@localhost:5432/postgres"
@@ -23,7 +26,11 @@ from backend.models import User
 # SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 # Create tables if they don't exist
-backend.models.Base.metadata.create_all(bind=engine)
+models.Base.metadata.create_all(bind=engine)
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+
 
 app = FastAPI()
 
@@ -35,8 +42,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+#ruta pentru inregistrare 
+app.include_router(users.router)
 
-# DB dependency
 def get_db():
     db = SessionLocal()
     try:
@@ -44,16 +52,16 @@ def get_db():
     finally:
         db.close()
 
-@app.get("/profile/{id_user}", response_model=backend.schemas.UserProfileResponse)
+@app.get("/profile/{id_user}", response_model=schemas.UserProfileResponse)
 def get_profile(id_user: int, db: Session = Depends(get_db)):
-    user = db.query(backend.models.User).filter(backend.models.User.id_user == id_user).first()
+    user = db.query(models.User).filter(models.User.id_user == id_user).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     return user
 
 @app.post("/profile/{id_user}")
-def update_profile(id_user: int, profile: backend.schemas.UserProfileUpdate, db: Session = Depends(get_db)):
-    user = db.query(backend.models.User).filter(backend.models.User.id_user == id_user).first()
+def update_profile(id_user: int, profile: schemas.UserProfileUpdate, db: Session = Depends(get_db)):
+    user = db.query(models.User).filter(models.User.id_user == id_user).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
@@ -95,7 +103,6 @@ def get_photo(photo_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Photo not found")
     return Response(content=photo.image_data, media_type="image/jpeg")
 
-
 @app.post("/reset-password")
 def reset_password(request: ResetPasswordRequest, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.email == request.email).first()
@@ -114,3 +121,17 @@ def reset_password(request: ResetPasswordRequest, db: Session = Depends(get_db))
 @app.get("/")
 def read_root():
     return {"message": "Welcome to the Social Platform API"}
+
+
+class SignInData(BaseModel):
+    email: str
+    password: str
+
+
+@app.post("/signin")
+def signin(data: SignInData):
+
+    if data.email == "admin@example.com" and data.password == "1234":
+        return {"message": "Autentificare reușită!"}
+
+    raise HTTPException(status_code=401, detail="Email sau parolă greșită")
