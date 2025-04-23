@@ -49,6 +49,13 @@ class Album(Base):
     vizibilitate = Column(String(50), default="privat")
     created_at = Column(TIMESTAMP, default=datetime.utcnow)
 
+class AlbumPhoto(Base):
+    __tablename__ = "album_photos"
+
+    id_album = Column(Integer, ForeignKey("albums.id", ondelete="CASCADE"), primary_key=True)
+    id_foto = Column(Integer, ForeignKey("fotos.id", ondelete="CASCADE"), primary_key=True)
+    added_at = Column(TIMESTAMP, default=datetime.utcnow)
+
 class FriendRequest(Base):
     __tablename__ = "friend_requests"
     id = Column(Integer, primary_key=True, index=True)
