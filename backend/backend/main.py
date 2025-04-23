@@ -23,7 +23,7 @@ import datetime
 from fastapi import HTTPException
 from sqlalchemy import func
 from routes import users
-
+from routes import albums
 
 
 # # Database connection string (adjust if necessary)
@@ -47,6 +47,7 @@ app.add_middleware(
 )
 
 app.include_router(users.router, prefix="/api")
+app.include_router(albums.router, prefix="/api")
 # DB dependency
 def get_db():
     db = SessionLocal()

@@ -42,6 +42,18 @@ class PhotoOut(BaseModel):
     status: Optional[str]
     created_at: datetime
 
+class AlbumCreate(BaseModel):
+    nume: str
+    vizibilitate: Optional[str] = "privat"  # sau public, după caz
+    id_user: int  # temporar hardcodat până avem autentificare cu token
+
+class AlbumOut(BaseModel):
+    id: int
+    nume: str
+    vizibilitate: str
+    created_at: datetime
+
+
 
 
 class ResetPasswordRequest(BaseModel):
