@@ -1,24 +1,25 @@
 from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session
-import backend.models, backend.schemas
+import models, schemas
+from typing import List
 import psycopg2
 import os
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response
-from backend.schemas import PhotoCreate
-from backend.models import Foto, Base
-from backend.database import SessionLocal, engine
+from schemas import PhotoCreate
+from models import Foto, Base
+from database import SessionLocal, engine
 from datetime import date
-from backend.passwords import generate_random_password, hash_password
-from backend.schemas import ResetPasswordRequest, PendingFriendRequest
-from backend.models import User
-from backend.models import User, Friendships, FriendRequest  # adjust based on your file structure
-from backend.schemas import FriendInfo
+from passwords import generate_random_password, hash_password
+from schemas import ResetPasswordRequest, PendingFriendRequest
+from models import User
+from models import User, Friendships, FriendRequest  # adjust based on your file structure
+from schemas import FriendInfo
 from typing import List
 from sqlalchemy import desc
-from datetime import datetime
+import datetime
 
 # # Database connection string (adjust if necessary)
 # DATABASE_URL = "postgresql://postgres:admin@localhost:5432/postgres"
@@ -28,7 +29,7 @@ from datetime import datetime
 # SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
-backend.models.Base.metadata.create_all(bind=engine)
+models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
@@ -49,16 +50,16 @@ def get_db():
     finally:
         db.close()
 
-@app.get("/profile/{id_user}", response_model=backend.schemas.UserProfileResponse)
+@app.get("/profile/{id_user}", response_model=schemas.UserProfileResponse)
 def get_profile(id_user: int, db: Session = Depends(get_db)):
-    user = db.query(backend.models.User).filter(backend.models.User.id_user == id_user).first()
+    user = db.query(models.User).filter(models.User.id_user == id_user).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     return user
 
 @app.post("/profile/{id_user}")
-def update_profile(id_user: int, profile: backend.schemas.UserProfileUpdate, db: Session = Depends(get_db)):
-    user = db.query(backend.models.User).filter(backend.models.User.id_user == id_user).first()
+def update_profile(id_user: int, profile: schemas.UserProfileUpdate, db: Session = Depends(get_db)):
+    user = db.query(models.User).filter(models.User.id_user == id_user).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
@@ -116,7 +117,7 @@ def reset_password(request: ResetPasswordRequest, db: Session = Depends(get_db))
 
     return {"message": "Password reset successfully", "new_password": new_password}
 #returneaza o lista de prieteni
-@app.get("/getfriends/{id_user}", response_model=list[FriendInfo])
+@app.get("/getfriends/{id_user}", response_model=List[FriendInfo])
 def get_friends(id_user: int, db: Session = Depends(get_db)):
     friendships = db.query(Friendships).filter(
         (Friendships.id_user1 == id_user) | (Friendships.id_user2 == id_user)
@@ -133,7 +134,7 @@ def get_friends(id_user: int, db: Session = Depends(get_db)):
     return friends
 
 #Returneaza o lista ordonata cu toate friendrequesturile cu statusul "PENDING"
-@app.get("/get_idling_friendrequest/{id_user}", response_model=list[PendingFriendRequest])
+@app.get("/get_idling_friendrequest/{id_user}", response_model=List[PendingFriendRequest])
 def get_pending_friend_requests(id_user: int, db: Session = Depends(get_db)):
     pending_requests = (
         db.query(
@@ -165,7 +166,7 @@ def accept_friend_request(id_receiver: int, id_sender: int, db: Session = Depend
     friendship = Friendships(
         id_user1=min(id_sender, id_receiver),
         id_user2=max(id_sender, id_receiver),
-        created_at=datetime()
+        created_at=datetime.datetime.now()
     )
     db.add(friendship)
     db.commit()
