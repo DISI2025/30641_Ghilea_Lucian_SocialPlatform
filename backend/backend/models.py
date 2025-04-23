@@ -41,6 +41,7 @@ class Friendships(Base):
     )
 class FriendRequest(Base):
     __tablename__ = "friend_requests"
+    id = Column(Integer, primary_key=True, index=True)
     id_sender = Column(Integer, ForeignKey("users.id_user"), primary_key=True)
     id_receiver = Column(Integer, ForeignKey("users.id_user"), primary_key=True)
     status = Column(String, nullable=False, default="PENDING")
