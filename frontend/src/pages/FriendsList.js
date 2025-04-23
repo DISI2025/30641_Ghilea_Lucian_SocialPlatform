@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link , useParams } from 'react-router-dom';
 import './FriendsList.css';
 
 function FriendsList() {
@@ -8,7 +8,7 @@ function FriendsList() {
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState('friends');
-  const userId = '12345'; // This should come from your app's state or params
+  const { userId } = useParams();
 
   useEffect(() => {
     const fetchData = async () => {

@@ -1,15 +1,18 @@
 import { useState, useEffect } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams , useNavigate } from 'react-router-dom';
 import './Profile.css';
 
 function Profile() {
   const { userId } = useParams();
   const currentUserId = localStorage.getItem('currentUserId');
-  const isCurrentUser = userId === currentUserId;
+  // const isCurrentUser = userId === currentUserId;
+  const isCurrentUser = userId;
   const [profile, setProfile] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isFollowing, setIsFollowing] = useState(false);
   const [posts, setPosts] = useState([]);
+  const navigate = useNavigate();
+
   
   // Poze default
   const defaultAvatar = 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png';
@@ -81,14 +84,11 @@ function Profile() {
               <strong>{profile.postsCount || 0}</strong>
               <span>Posts</span>
             </div>
-            <div>
+            <div onClick={() => navigate(`/friends/${userId}`)} style={{cursor: 'pointer'}}>
               <strong>{profile.followersCount || 0}</strong>
-              <span>Followers</span>
+              <span>Friends</span>
             </div>
-            <div>
-              <strong>{profile.followingCount || 0}</strong>
-              <span>Following</span>
-            </div>
+
           </div>
           
           {isCurrentUser ? (
@@ -98,6 +98,9 @@ function Profile() {
               </Link>
               <Link to="/edit-profile" className="edit-profile-btn">
                 Edit Profile
+              </Link>
+              <Link to={`/friends/${userId}`} className="friends-btn">
+                Friends
               </Link>
             </div>
           ) : (
