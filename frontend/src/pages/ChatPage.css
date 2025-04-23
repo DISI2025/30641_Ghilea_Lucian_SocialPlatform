@@ -292,7 +292,7 @@
   }
   
   /* Responsive design */
-  @media (max-width: 768px) {
+  /* @media (max-width: 768px) {
     .chat-sidebar {
       width: 100%;
       display: ${activeChat ? 'none' : 'flex'};
@@ -301,4 +301,4 @@
     .chat-main {
       display: ${activeChat ? 'flex' : 'none'};
     }
-  }
+  } */
