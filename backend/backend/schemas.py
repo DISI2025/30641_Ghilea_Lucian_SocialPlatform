@@ -5,6 +5,10 @@ from typing import Optional
 from datetime import datetime, date
 
 
+class UserLogin(BaseModel):
+    email: str
+    parola: str
+
 class UserProfileUpdate(BaseModel):
     nume: Optional[str] = None
     data_nasterii: Optional[date] = None
@@ -17,6 +21,14 @@ class UserProfileResponse(BaseModel):
     email: Optional[str]
     data_nasterii: Optional[date]
     bio: Optional[str]
+
+class UserCreate(BaseModel):
+    nume: str
+    prenume: str
+    email: str
+    parola: str
+    data_nasterii: Optional[date]
+    bio: Optional[str] = None
 
 class PhotoCreate(BaseModel):
     id_user: int

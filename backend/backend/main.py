@@ -22,6 +22,8 @@ from sqlalchemy import desc
 import datetime
 from fastapi import HTTPException
 from sqlalchemy import func
+from routes import users
+
 
 
 # # Database connection string (adjust if necessary)
@@ -36,7 +38,6 @@ models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
-
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:3000"],  # React frontend
@@ -45,6 +46,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(users.router, prefix="/api")
 # DB dependency
 def get_db():
     db = SessionLocal()
