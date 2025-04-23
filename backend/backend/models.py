@@ -39,6 +39,16 @@ class Friendships(Base):
     __table_args__ = (
         PrimaryKeyConstraint('id_user1', 'id_user2'),
     )
+
+class Album(Base):
+    __tablename__ = "albums"
+
+    id = Column(Integer, primary_key=True, index=True)
+    id_user = Column(Integer, ForeignKey("users.id_user"), nullable=False)
+    nume = Column(String(255), nullable=False)
+    vizibilitate = Column(String(50), default="privat")
+    created_at = Column(TIMESTAMP, default=datetime.utcnow)
+
 class FriendRequest(Base):
     __tablename__ = "friend_requests"
     id = Column(Integer, primary_key=True, index=True)
