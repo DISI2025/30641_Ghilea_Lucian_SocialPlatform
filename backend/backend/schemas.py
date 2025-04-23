@@ -3,7 +3,7 @@ from datetime import datetime
 
 # from _pydatetime import datetime
 
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 from typing import Optional
 from datetime import datetime, date
 
@@ -39,6 +39,12 @@ class PhotoOut(BaseModel):
     caption: Optional[str]
     status: Optional[str]
     created_at: datetime
+
+
+
+class ResetPasswordRequest(BaseModel):
+    email: Optional[str]
+
 
 model_config = {
         "from_attributes": True
