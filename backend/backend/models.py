@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Date, Boolean, ForeignKey, Text, TIMESTAMP, LargeBinary
+from sqlalchemy import Column, Integer, String, Date, Boolean, ForeignKey, Text, TIMESTAMP, LargeBinary, PrimaryKeyConstraint
 from sqlalchemy.ext.declarative import declarative_base
 from datetime import datetime
 
@@ -7,7 +7,7 @@ Base = declarative_base()
 class User(Base):
     __tablename__ = "users"
 
-    id_user = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    id_user = Column(Integer, primary_key=True, index=True)
     nume = Column(String)
     prenume = Column(String)
     email = Column(String, unique=True)
@@ -28,3 +28,20 @@ class Foto(Base):
     status = Column(String(64), nullable=True)
     created_at = Column(TIMESTAMP, default=datetime)
     image_data = Column(LargeBinary)  # New column for image BLOB
+
+class Friendships(Base):
+    __tablename__ = "friendships"
+
+    id_user1 = Column(Integer, nullable=False)
+    id_user2 = Column(Integer, nullable=False)
+    created_at = Column(TIMESTAMP, default=datetime)
+
+    __table_args__ = (
+        PrimaryKeyConstraint('id_user1', 'id_user2'),
+    )
+class FriendRequest(Base):
+    __tablename__ = "friend_requests"
+    id_sender = Column(Integer, ForeignKey("users.id_user"), primary_key=True)
+    id_receiver = Column(Integer, ForeignKey("users.id_user"), primary_key=True)
+    status = Column(String, nullable=False, default="PENDING")
+    created_at = Column(TIMESTAMP, default=datetime)
