@@ -4,64 +4,109 @@ import './FriendsList.css';
 
 function FriendsList() {
   const [friends, setFriends] = useState([]);
+  const [pendingRequests, setPendingRequests] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [activeTab, setActiveTab] = useState('friends');
+  const userId = '12345'; // This should come from your app's state or params
 
   useEffect(() => {
-    // Mock data - replace with actual API call
-    const mockFriends = [
-      {
-        id: 1,
-        name: "Maria Ionescu",
-        username: "maria_ionescu",
-        avatar: "https://randomuser.me/api/portraits/women/33.jpg",
-        online: true,
-        mutualFriends: 12
-      },
-      {
-        id: 2,
-        name: "Alex Popescu",
-        username: "alex_popescu",
-        avatar: "https://randomuser.me/api/portraits/men/22.jpg",
-        online: false,
-        mutualFriends: 5
-      },
-      {
-        id: 3,
-        name: "Elena Dumitrescu",
-        username: "elena_d",
-        avatar: "https://randomuser.me/api/portraits/women/44.jpg",
-        online: true,
-        mutualFriends: 8
-      },
-      {
-        id: 4,
-        name: "Andrei Georgescu",
-        username: "andrei_g",
-        avatar: "https://randomuser.me/api/portraits/men/65.jpg",
-        online: false,
-        mutualFriends: 3
-      },
-      {
-        id: 5,
-        name: "Cristina Moldovan",
-        username: "cristy_m",
-        avatar: "https://randomuser.me/api/portraits/women/68.jpg",
-        online: true,
-        mutualFriends: 7
-      }
-    ];
+    const fetchData = async () => {
+      try {
+        // Fetch friends list
+        const friendsResponse = await fetch(`http://localhost:8000/getfriends/${userId}`);
+        if (!friendsResponse.ok) throw new Error('Failed to fetch friends');
+        const friendsData = await friendsResponse.json();
+        
+        // Transform friends data with proper error checking
+        const formattedFriends = friendsData.map(friend => ({
+          id: friend.id_user,
+          name: `${friend.prenume || ''} ${friend.nume || ''}`.trim(),
+          username: friend.email ? friend.email.split('@')[0] : `user_${friend.id_user}`,
+          avatar: `https://ui-avatars.com/api/?name=${friend.prenume || ''}+${friend.nume || ''}&background=random`,
+          mutualFriends: Math.floor(Math.random() * 15) + 1
+        }));
+        
+        setFriends(formattedFriends);
 
-    // Simulate API call
-    setTimeout(() => {
-      setFriends(mockFriends);
-      setIsLoading(false);
-    }, 800);
-  }, []);
+        // Fetch pending requests
+        const pendingResponse = await fetch(`http://localhost:8000/get_idling_friendrequest/${userId}`);
+        if (!pendingResponse.ok) throw new Error('Failed to fetch pending requests');
+        const pendingData = await pendingResponse.json();
+        
+        // Transform pending requests data with proper error checking
+        const formattedPending = pendingData.map(request => ({
+          id: request.id_sender || request.id, // Use whichever field exists
+          name: request.nume  || `User ${request.id_sender || request.id}`,
+          username: request.prenume || `user_${request.id_sender || request.id}`,
+          avatar: request.avatar || `https://ui-avatars.com/api/?name=User+${request.id_sender || request.id}&background=random`
+        }));
+        
+        setPendingRequests(formattedPending);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        // Set empty arrays if there's an error
+        setFriends([]);
+        setPendingRequests([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [userId]);
+
+  const handleAcceptRequest = async (senderId) => {
+    try {
+      const response = await fetch(`http://localhost:8000/accept_friendrequest/${userId}/${senderId}`, {
+        method: 'POST'
+      });
+      
+      if (response.ok) {
+        // Update the pending requests list
+        setPendingRequests(prev => prev.filter(req => req.id !== senderId));
+        // Optionally refresh friends list
+        const refreshedResponse = await fetch(`http://localhost:8000/getfriends/${userId}`);
+        if (refreshedResponse.ok) {
+          const refreshedData = await refreshedResponse.json();
+          const formattedFriends = refreshedData.map(friend => ({
+            id: friend.id_user,
+            name: `${friend.prenume || ''} ${friend.nume || ''}`.trim(),
+            username: friend.email ? friend.email.split('@')[0] : `user_${friend.id_user}`,
+            avatar: `https://ui-avatars.com/api/?name=${friend.prenume || ''}+${friend.nume || ''}&background=random`,
+            mutualFriends: Math.floor(Math.random() * 15) + 1
+          }));
+          setFriends(formattedFriends);
+        }
+      }
+    } catch (error) {
+      console.error('Error accepting friend request:', error);
+    }
+  };
+
+  const handleDeclineRequest = async (senderId) => {
+    try {
+      const response = await fetch(`http://localhost:8000/decline_friendrequest/${userId}/${senderId}`, {
+        method: 'POST'
+      });
+      
+      if (response.ok) {
+        // Update the pending requests list
+        setPendingRequests(prev => prev.filter(req => req.id !== senderId));
+      }
+    } catch (error) {
+      console.error('Error declining friend request:', error);
+    }
+  };
 
   const filteredFriends = friends.filter(friend =>
     friend.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     friend.username.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const filteredPending = pendingRequests.filter(request =>
+    request.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    request.username.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   if (isLoading) {
@@ -91,49 +136,102 @@ function FriendsList() {
       </div>
 
       <div className="friends-tabs">
-        <button className="active">Toți prietenii ({friends.length})</button>
-        <button>Online ({friends.filter(f => f.online).length})</button>
-        <button>Adăugați recent</button>
+        <button 
+          className={activeTab === 'friends' ? 'active' : ''}
+          onClick={() => setActiveTab('friends')}
+        >
+          Toți prietenii ({friends.length})
+        </button>
+        <button 
+          className={activeTab === 'pending' ? 'active' : ''}
+          onClick={() => setActiveTab('pending')}
+        >
+          Pending ({pendingRequests.length})
+        </button>
       </div>
 
       <div className="friends-list">
-        {filteredFriends.length > 0 ? (
-          filteredFriends.map(friend => (
-            <div key={friend.id} className="friend-card">
-              <div className="friend-info">
-                <div className="friend-avatar">
-                  <img src={friend.avatar} alt={friend.name} />
-                  {friend.online && <span className="online-badge"></span>}
+        {activeTab === 'friends' ? (
+          filteredFriends.length > 0 ? (
+            filteredFriends.map(friend => (
+              <div key={friend.id} className="friend-card">
+                <div className="friend-info">
+                  <div className="friend-avatar">
+                    <img src={friend.avatar} alt={friend.name} />
+                  </div>
+                  <div className="friend-details">
+                    <Link to={`/profile/${friend.username}`} className="friend-name">{friend.name}</Link>
+                    <p className="friend-username">@{friend.username}</p>
+                    <p className="mutual-friends">{friend.mutualFriends} prieteni în comun</p>
+                  </div>
                 </div>
-                <div className="friend-details">
-                  <Link to={`/profile/${friend.username}`} className="friend-name">{friend.name}</Link>
-                  <p className="friend-username">@{friend.username}</p>
-                  <p className="mutual-friends">{friend.mutualFriends} prieteni în comun</p>
+                <div className="friend-actions">
+                  <button className="message-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/>
+                    </svg>
+                    Mesaj
+                  </button>
+                  <button className="remove-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11H7v-2h10v2z"/>
+                    </svg>
+                  </button>
                 </div>
               </div>
-              <div className="friend-actions">
-                <button className="message-btn">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/>
-                  </svg>
-                  Mesaj
-                </button>
-                <button className="remove-btn">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11H7v-2h10v2z"/>
-                  </svg>
-                </button>
-              </div>
+            ))
+          ) : (
+            <div className="no-friends">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+              </svg>
+              <h3>Nu s-au găsit prieteni</h3>
+              <p>Încearcă alt termen de căutare</p>
             </div>
-          ))
+          )
         ) : (
-          <div className="no-friends">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-            </svg>
-            <h3>Nu s-au găsit prieteni</h3>
-            <p>Încearcă alt termen de căutare</p>
-          </div>
+          filteredPending.length > 0 ? (
+            filteredPending.map(request => (
+              <div key={request.id} className="friend-card">
+                <div className="friend-info">
+                  <div className="friend-avatar">
+                    <img src={request.avatar} alt={request.name} />
+                  </div>
+                  <div className="friend-details">
+                    <Link to={`/profile/${request.username}`} className="friend-name">{request.name} {request.username}</Link>
+                    {/* <p className="friend-username">@{request.username}</p> */}
+                  </div>
+                </div>
+                <div className="friend-actions">
+                  <button 
+                    className="accept-btn"
+                    onClick={() => handleAcceptRequest(request.id)}
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/>
+                    </svg>
+                    Acceptă
+                  </button>
+                  <button 
+                    className="decline-btn"
+                    onClick={() => handleDeclineRequest(request.id)}
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/>
+                    </svg>
+                    Refuză
+                  </button>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="no-friends">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+              </svg>
+              <h3>Nu există cereri de prietenie în așteptare</h3>
+            </div>
+          )
         )}
       </div>
     </div>

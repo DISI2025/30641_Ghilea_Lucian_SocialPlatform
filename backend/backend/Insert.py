@@ -1,21 +1,21 @@
 from sqlalchemy import create_engine, text
 from datetime import date, datetime, timedelta
 
-DATABASE_URL = "postgresql://postgres:admin@localhost:5432/postgres"
+DATABASE_URL = "postgresql://postgres:postgres@localhost:5432/postgres"
 engine = create_engine(DATABASE_URL)
 
 users = [
-    {
-        "id_user": 12345,
-        "nume": "Popescu",
-        "prenume": "Andrei",
-        "email": "andrei.popescu@example.com",
-        "hash_parola": "parola",
-        "data_nasterii": date(1990, 5, 15),
-        "id_poza_profil": None,
-        "bio": "Salut, sunt Andrei!",
-        "moderator": False
-    },
+    # {
+    #     "id_user": 12345,
+    #     "nume": "Popescu",
+    #     "prenume": "Andrei",
+    #     "email": "andrei.popescu@example.com",
+    #     "hash_parola": "parola",
+    #     "data_nasterii": date(1990, 5, 15),
+    #     "id_poza_profil": None,
+    #     "bio": "Salut, sunt Andrei!",
+    #     "moderator": False
+    # },
     {
         "id_user": 12346,
         "nume": "Dragomir",
