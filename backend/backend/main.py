@@ -131,6 +131,24 @@ def get_friends(id_user: int, db: Session = Depends(get_db)):
 
     return friends
 
+#Returneaza o lista ordonata cu toate friendrequesturile cu statusul "PENDING"
+@app.get("/get_idling_friendrequest/{id_user}", response_model=list[PendingFriendRequest])
+def get_pending_friend_requests(id_user: int, db: Session = Depends(get_db)):
+    pending_requests = (
+        db.query(
+            FriendRequest.id_sender,
+            User.nume,
+            User.prenume,
+            FriendRequest.created_at
+        )
+        .join(User, FriendRequest.id_sender == User.id_user)
+        .filter(FriendRequest.id_receiver == id_user, FriendRequest.status == "pending")
+        .order_by(desc(FriendRequest.created_at))
+        .all()
+    )
+
+    return pending_requests
+
 
 
 @app.get("/")
