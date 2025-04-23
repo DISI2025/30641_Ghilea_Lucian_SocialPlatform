@@ -12,11 +12,7 @@ from schemas import PhotoCreate
 from models import Foto, Base
 from database import SessionLocal, engine
 from datetime import date
-from backend.password import generate_random_password, hash_password
-from backend.schemas import ResetPasswordRequest
-from backend.models import User
 from routes import users
-
 
 # # Database connection string (adjust if necessary)
 # DATABASE_URL = "postgresql://postgres:admin@localhost:5432/postgres"
@@ -102,22 +98,6 @@ def get_photo(photo_id: int, db: Session = Depends(get_db)):
     if not photo or not photo.image_data:
         raise HTTPException(status_code=404, detail="Photo not found")
     return Response(content=photo.image_data, media_type="image/jpeg")
-
-@app.post("/reset-password")
-def reset_password(request: ResetPasswordRequest, db: Session = Depends(get_db)):
-    user = db.query(User).filter(User.email == request.email).first()
-
-    if not user:
-        raise HTTPException(status_code=401, detail="User does not exist")
-
-    new_password = generate_random_password()
-    hashed = hash_password(new_password)
-
-    user.hash_parola = hashed
-    db.commit()
-
-    return {"message": "Password reset successfully", "new_password": new_password}
-
 @app.get("/")
 def read_root():
     return {"message": "Welcome to the Social Platform API"}
@@ -130,7 +110,7 @@ class SignInData(BaseModel):
 
 @app.post("/signin")
 def signin(data: SignInData):
-
+    # Exemplu simplu de validare
     if data.email == "admin@example.com" and data.password == "1234":
         return {"message": "Autentificare reușită!"}
 
