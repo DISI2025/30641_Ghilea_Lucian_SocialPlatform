@@ -20,6 +20,9 @@ from schemas import FriendInfo
 from typing import List
 from sqlalchemy import desc
 import datetime
+from fastapi import HTTPException
+from sqlalchemy import func
+
 
 # # Database connection string (adjust if necessary)
 # DATABASE_URL = "postgresql://postgres:admin@localhost:5432/postgres"
@@ -187,6 +190,38 @@ def decline_friend_request(id_receiver: int, id_sender: int, db: Session = Depen
 
     return {"message": "Friend request declined"}
 
+@app.post("/send_friend_request/{id_sender}/{email_receiver}")
+def send_friend_request(id_sender: int, email_receiver: str, db: Session = Depends(get_db)):
+    receiver = db.query(User).filter(User.email == email_receiver).first()
+    if not receiver:
+        raise HTTPException(status_code=404, detail="Receiver not found")
+
+    if receiver.id_user == id_sender:
+        raise HTTPException(status_code=400, detail="Cannot send friend request to yourself")
+
+    existing_request = db.query(FriendRequest).filter(
+        ((FriendRequest.id_sender == id_sender) & (FriendRequest.id_receiver == receiver.id_user)) |
+        ((FriendRequest.id_sender == receiver.id_user) & (FriendRequest.id_receiver == id_sender))
+    ).first()
+
+    if existing_request:
+        raise HTTPException(status_code=400, detail="Friend request already exists")
+
+    max_id = db.query(func.max(FriendRequest.id)).scalar()
+    new_id = (max_id or 0) + 1
+
+    new_request = FriendRequest(
+        id=new_id,
+        id_sender=id_sender,
+        id_receiver=receiver.id_user,
+        status="PENDING",
+        created_at=datetime.datetime.now()
+    )
+
+    db.add(new_request)
+    db.commit()
+
+    return {"message": "Friend request sent", "request_id": new_id}
 @app.get("/")
 def read_root():
     return {"message": "Welcome to the Social Platform API"}
