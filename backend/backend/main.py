@@ -15,6 +15,8 @@ from datetime import date
 from backend.password import generate_random_password, hash_password
 from backend.schemas import ResetPasswordRequest
 from backend.models import User
+from routes import users
+
 
 # # Database connection string (adjust if necessary)
 # DATABASE_URL = "postgresql://postgres:admin@localhost:5432/postgres"
@@ -40,7 +42,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
+#ruta pentru inregistrare 
+app.include_router(users.router)
 
 def get_db():
     db = SessionLocal()
@@ -49,16 +52,16 @@ def get_db():
     finally:
         db.close()
 
-@app.get("/profile/{id_user}", response_model=backend.schemas.UserProfileResponse)
+@app.get("/profile/{id_user}", response_model=schemas.UserProfileResponse)
 def get_profile(id_user: int, db: Session = Depends(get_db)):
-    user = db.query(backend.models.User).filter(backend.models.User.id_user == id_user).first()
+    user = db.query(models.User).filter(models.User.id_user == id_user).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     return user
 
 @app.post("/profile/{id_user}")
-def update_profile(id_user: int, profile: backend.schemas.UserProfileUpdate, db: Session = Depends(get_db)):
-    user = db.query(backend.models.User).filter(backend.models.User.id_user == id_user).first()
+def update_profile(id_user: int, profile: schemas.UserProfileUpdate, db: Session = Depends(get_db)):
+    user = db.query(models.User).filter(models.User.id_user == id_user).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
@@ -100,8 +103,6 @@ def get_photo(photo_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Photo not found")
     return Response(content=photo.image_data, media_type="image/jpeg")
 
-
-
 @app.post("/reset-password")
 def reset_password(request: ResetPasswordRequest, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.email == request.email).first()
@@ -129,7 +130,7 @@ class SignInData(BaseModel):
 
 @app.post("/signin")
 def signin(data: SignInData):
-    # Exemplu simplu de validare
+
     if data.email == "admin@example.com" and data.password == "1234":
         return {"message": "Autentificare reușită!"}
 
