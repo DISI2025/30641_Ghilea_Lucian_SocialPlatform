@@ -7,6 +7,7 @@ function CreatePost() {
   const [image, setImage] = useState(null);
   const [caption, setCaption] = useState('');
   const [previewUrl, setPreviewUrl] = useState('');
+  const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef(null);
 
   const handleImageChange = (e) => {
@@ -23,13 +24,50 @@ function CreatePost() {
     fileInputRef.current.value = '';
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Aici vei adăuga logica pentru upload
-    console.log({ image, caption });
-    // Reset form after submission
-    setCaption('');
-    removeImage();
+    
+    if (!image) {
+      alert('Please select an image first');
+      return;
+    }
+
+    setIsUploading(true);
+    
+    try {
+      // Prepare the data to match your PhotoCreate model
+      const photoData = {
+        id_user: 1, // You'll need to get this from your auth system
+        caption: caption,
+        status: "active", // Or whatever default status you want
+        image_data: image.path // Send the file path
+      };
+
+      // Send to your backend
+      const response = await fetch('http://localhost:8000/upload_photo_json/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(photoData),
+      });
+
+      if (!response.ok) {
+        throw new Error('Upload failed');
+      }
+
+      const result = await response.json();
+      console.log('Upload success:', result);
+      
+      // Reset form after successful upload
+      setCaption('');
+      removeImage();
+    } catch (error) {
+      console.error('Error uploading photo:', error);
+      alert('Upload failed. Please try again.');
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   return (
@@ -83,16 +121,16 @@ function CreatePost() {
               type="button"
               onClick={() => fileInputRef.current.click()}
               className="upload-btn"
-              disabled={!previewUrl}
+              disabled={!previewUrl || isUploading}
             >
               <FiUpload /> Change Image
             </button>
             <button 
               type="submit" 
               className="submit-btn"
-              disabled={!image}
+              disabled={!image || isUploading}
             >
-              Share Post
+              {isUploading ? 'Uploading...' : 'Share Post'}
             </button>
           </div>
         </form>
