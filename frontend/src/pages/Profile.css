@@ -364,3 +364,100 @@
     gap: 10px;
     margin-top: 15px;
   }
+
+  .photos-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-top: 20px;
+  }
+  
+  .photo-thumbnail {
+    position: relative;
+    padding-bottom: 100%; /* Aspect ratio 1:1 */
+    overflow: hidden;
+  }
+  
+  .photo-thumbnail img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  
+  .photo-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(0, 0, 0, 0.5);
+    color: white;
+    padding: 5px;
+    transform: translateY(100%);
+    transition: transform 0.3s;
+  }
+  
+  .photo-thumbnail:hover .photo-overlay {
+    transform: translateY(0);
+  }
+  
+  .no-photos {
+    text-align: center;
+    padding: 40px;
+    color: #888;
+  }
+
+
+  /* Modal styles */
+.photo-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  position: relative;
+  max-width: 90%;
+  max-height: 90%;
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+}
+
+.close-modal {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #333;
+}
+
+.enlarged-photo {
+  max-width: 100%;
+  max-height: 80vh;
+  display: block;
+  margin: 0 auto;
+}
+
+.photo-caption {
+  margin-top: 15px;
+  text-align: center;
+  color: #333;
+}
+
+/* Add this to prevent scrolling when modal is open */
+body.modal-open {
+  overflow: hidden;
+}

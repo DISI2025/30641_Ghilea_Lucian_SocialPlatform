@@ -4,6 +4,7 @@ from sqlalchemy.orm import sessionmaker, Session
 import models, schemas
 from typing import List
 import psycopg2
+import base64
 import os
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
@@ -106,6 +107,28 @@ def get_photo(photo_id: int, db: Session = Depends(get_db)):
     if not photo or not photo.image_data:
         raise HTTPException(status_code=404, detail="Photo not found")
     return Response(content=photo.image_data, media_type="image/jpeg")
+
+
+@app.get("/get_photos_by_user/{id_user}")
+def get_photos_by_user(id_user: int, db: Session = Depends(get_db)):
+    photos = db.query(Foto).filter(Foto.id_user == id_user).all()
+
+    if not photos:
+        raise HTTPException(status_code=404, detail="No photos found for this user")
+
+    photo_list = []
+    for photo in photos:
+        if photo.image_data:
+            base64_image = base64.b64encode(photo.image_data).decode("utf-8")
+            photo_list.append({
+                "photo_id": photo.id,
+                "caption": photo.caption,
+                "status": photo.status,
+                "created_at": photo.created_at,
+                "image_base64": base64_image
+            })
+
+    return {"photos": photo_list}
 
 
 @app.post("/reset-password")
