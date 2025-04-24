@@ -7,6 +7,8 @@ from schemas import UserCreate
 from passwords import hash_password
 from schemas import UserLogin
 from passwords import verify_password
+from models import AlbumPhoto, Foto, Album
+from schemas import AddPhotosToAlbum
 
 router = APIRouter()
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -58,3 +60,11 @@ def login(credentials: UserLogin, db: Session = Depends(get_db)):
         "prenume": user.prenume,
         "email": user.email
     }
+
+@router.post("/album/add-photos")
+def add_photos_to_album(data: AddPhotosToAlbum, db: Session = Depends(get_db)):
+    for photo_id in data.photo_ids:
+        relation = AlbumPhoto(id_album=data.id_album, id_foto=photo_id)
+        db.add(relation)
+    db.commit()
+    return {"message": f"{len(data.photo_ids)} fotografii adăugate în albumul {data.id_album}"}

@@ -3,6 +3,7 @@
 from pydantic import BaseModel, EmailStr
 from typing import Optional
 from datetime import datetime, date
+from typing import List
 
 
 class UserLogin(BaseModel):
@@ -53,8 +54,9 @@ class AlbumOut(BaseModel):
     vizibilitate: str
     created_at: datetime
 
-
-
+class AddPhotosToAlbum(BaseModel):
+    id_album: int
+    photo_ids: List[int]
 
 class ResetPasswordRequest(BaseModel):
     email: Optional[str]
