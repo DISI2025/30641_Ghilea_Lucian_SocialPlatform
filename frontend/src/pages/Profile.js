@@ -99,7 +99,7 @@ const [isModalOpen, setIsModalOpen] = useState(false);
         
         <div className="profile-info">
           <h1>{profile.name}</h1>
-          <p className="username">@{profile.username}</p>
+          <p className="username">@{profile.nume} {profile.prenume}</p>
           <p className="bio">{profile.bio || 'No bio yet'}</p>
           
           <div className="profile-stats">
