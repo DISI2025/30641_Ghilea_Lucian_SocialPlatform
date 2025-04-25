@@ -1,9 +1,10 @@
-// src/components/CreatePost.js
 import { useState, useRef } from 'react';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 import { FiUpload, FiX, FiImage } from 'react-icons/fi';
 import './CreatePost.css';
 
 function CreatePost() {
+  const { userId } = useParams();
   const [image, setImage] = useState(null);
   const [caption, setCaption] = useState('');
   const [previewUrl, setPreviewUrl] = useState('');
@@ -21,7 +22,7 @@ function CreatePost() {
   const removeImage = () => {
     setImage(null);
     setPreviewUrl('');
-    fileInputRef.current.value = '';
+    // fileInputRef.current.value = '';
   };
 
   const handleSubmit = async (e) => {
@@ -35,36 +36,31 @@ function CreatePost() {
     setIsUploading(true);
     
     try {
-      // Prepare the data to match your PhotoCreate model
-      const photoData = {
-        id_user: 1, // You'll need to get this from your auth system
-        caption: caption,
-        status: "active", // Or whatever default status you want
-        image_data: image.path // Send the file path
-      };
-
-      // Send to your backend
-      const response = await fetch('http://localhost:8000/upload_photo_json/', {
+      const formData = new FormData();
+      formData.append('id_user', userId);
+      formData.append('caption', caption);
+      formData.append('status', 'public');
+      formData.append('image_file', image); 
+      const response = await fetch('http://localhost:8000/upload_photo/', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(photoData),
+        body: formData,
+   
       });
 
       if (!response.ok) {
-        throw new Error('Upload failed');
+        const errorData = await response.json();
+        throw new Error(errorData.detail || 'Upload failed');
       }
 
       const result = await response.json();
       console.log('Upload success:', result);
+      alert('Photo uploaded successfully!');
       
-      // Reset form after successful upload
       setCaption('');
       removeImage();
     } catch (error) {
       console.error('Error uploading photo:', error);
-      alert('Upload failed. Please try again.');
+      alert(`Upload failed: ${error.message}`);
     } finally {
       setIsUploading(false);
     }

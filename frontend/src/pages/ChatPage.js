@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import './ChatPage.css';
 
 function ChatPage() {
+  const { userId } = useParams();
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const [isLoading, setIsLoading] = useState(true);
