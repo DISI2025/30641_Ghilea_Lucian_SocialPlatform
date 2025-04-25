@@ -73,6 +73,11 @@ class PendingFriendRequest(BaseModel):
     prenume: str
     created_at: datetime
 
+class AlbumSummary(BaseModel):
+    id: int
+    nume: str
+    foto_count: int
+
 
 model_config = {
         "from_attributes": True
