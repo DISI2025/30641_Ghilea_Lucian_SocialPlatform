@@ -2,9 +2,11 @@ from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session
 import models, schemas
+from fastapi import UploadFile, File
 from typing import List
 import psycopg2
 import base64
+from fastapi import Form
 import os
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
@@ -80,18 +82,20 @@ def update_profile(id_user: int, profile: schemas.UserProfileUpdate, db: Session
     db.commit()
     return {"message": "Profile updated successfully"}
 
-@app.post("/upload_photo_json/")
-def upload_photo(photo: PhotoCreate, db: Session = Depends(get_db)):
-    if not os.path.isfile(photo.image_data):
-        raise HTTPException(status_code=400, detail="Image path not found")
-
-    with open(photo.image_data, "rb") as file:
-        image_bytes = file.read()
-
+@app.post("/upload_photo/")
+async def upload_photo(
+    id_user: int = Form(...),
+    caption: str = Form(...),
+    status: str = Form(...),
+    image_file: UploadFile = File(...),
+    db: Session = Depends(get_db)
+):
+    image_bytes = await image_file.read()
+    
     new_photo = Foto(
-        id_user=photo.id_user,
-        caption=photo.caption,
-        status=photo.status,
+        id_user=id_user,
+        caption=caption,
+        status=status,
         image_data=image_bytes
     )
 
