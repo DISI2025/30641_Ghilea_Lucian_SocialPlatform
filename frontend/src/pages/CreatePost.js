@@ -22,7 +22,7 @@ function CreatePost() {
   const removeImage = () => {
     setImage(null);
     setPreviewUrl('');
-    fileInputRef.current.value = '';
+    // fileInputRef.current.value = '';
   };
 
   const handleSubmit = async (e) => {
@@ -40,13 +40,11 @@ function CreatePost() {
       formData.append('id_user', userId);
       formData.append('caption', caption);
       formData.append('status', 'public');
-      formData.append('image_file', image); // Folosim 'image_file' pentru a se potrivi cu backend-ul
-
-      // Trimitem ca FormData în loc de JSON
+      formData.append('image_file', image); 
       const response = await fetch('http://localhost:8000/upload_photo/', {
         method: 'POST',
         body: formData,
-        // Nu este nevoie de headers['Content-Type'] pentru FormData
+   
       });
 
       if (!response.ok) {
@@ -58,7 +56,6 @@ function CreatePost() {
       console.log('Upload success:', result);
       alert('Photo uploaded successfully!');
       
-      // Resetăm formularul după încărcare
       setCaption('');
       removeImage();
     } catch (error) {

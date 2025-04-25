@@ -54,7 +54,7 @@ const [isModalOpen, setIsModalOpen] = useState(false);
 
     fetchProfile();
     fetchPosts();
-    fetchPhotos(); // Apelăm funcția pentru a încărca pozele
+    fetchPhotos(); 
   }, [userId]);
 
   const handleFollow = async () => {
@@ -242,9 +242,6 @@ const [isModalOpen, setIsModalOpen] = useState(false);
           </div>
         </div>
       )}
-
-
-
 
       </div>
     </div>
