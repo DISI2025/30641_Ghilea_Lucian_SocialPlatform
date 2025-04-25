@@ -27,6 +27,7 @@ from fastapi import HTTPException
 from sqlalchemy import func
 from routes import users
 from routes import albums
+from sqlalchemy import or_, and_
 
 
 # # Database connection string (adjust if necessary)
@@ -149,21 +150,55 @@ def reset_password(request: ResetPasswordRequest, db: Session = Depends(get_db))
     db.commit()
 
     return {"message": "Password reset successfully", "new_password": new_password}
-#returneaza o lista de prieteni
+#   SearchHelp
+@app.get("/get_friends/{id_user}/{searchstring}", response_model=list[FriendInfo])
+def search_potential_friends(id_user: int, searchstring: str, db: Session = Depends(get_db)):
+    friend_ids = db.query(Friendships).filter(
+        (Friendships.id_user1 == id_user) | (Friendships.id_user2 == id_user)
+    ).all()
+
+    already_friends_ids = []
+    for f in friend_ids:
+        if f.id_user1 == id_user:
+            already_friends_ids.append(f.id_user2)
+        else:
+            already_friends_ids.append(f.id_user1)
+    pending_requests = db.query(FriendRequest).filter(
+        or_(
+            and_(FriendRequest.id_sender == id_user),
+            and_(FriendRequest.id_receiver == id_user)
+        )
+    ).all()
+
+    for r in pending_requests:
+        if r.id_sender == id_user:
+            already_friends_ids.append(r.id_receiver)
+        else:
+            already_friends_ids.append(r.id_sender)
+
+    exclude_ids = set(already_friends_ids + [id_user])
+
+    results = db.query(User).filter(
+        or_(
+            User.nume.ilike(f"%{searchstring}%"),
+            User.prenume.ilike(f"%{searchstring}%"),
+            User.email.ilike(f"%{searchstring}%")
+        ),
+        ~User.id_user.in_(exclude_ids)
+    ).limit(5).all()
+
+    return results
 @app.get("/getfriends/{id_user}", response_model=List[FriendInfo])
 def get_friends(id_user: int, db: Session = Depends(get_db)):
     friendships = db.query(Friendships).filter(
         (Friendships.id_user1 == id_user) | (Friendships.id_user2 == id_user)
     ).all()
-
     friend_ids = [
         f.id_user2 if f.id_user1 == id_user else f.id_user1 for f in friendships
     ]
-
     if not friend_ids:
         return []
     friends = db.query(User).filter(User.id_user.in_(friend_ids)).all()
-
     return friends
 
 #Returneaza o lista ordonata cu toate friendrequesturile cu statusul "PENDING"
