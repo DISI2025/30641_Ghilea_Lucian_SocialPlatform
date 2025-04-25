@@ -61,12 +61,15 @@ function FriendsList() {
     fetchData();
   }, [userId]);
 
-  const handleSearchUsers = async () => {
-    if (!userSearchTerm.trim()) return;
+  const handleSearchUsers = async (searchString) => {
+    if (!searchString.trim()) {
+      setSearchResults([]);
+      return;
+    }
     
     setSearchLoading(true);
     try {
-      const response = await fetch(`http://localhost:8000/search_users?email=${userSearchTerm}`);
+      const response = await fetch(`http://localhost:8000/get_friends/${userId}/${searchString}`);
       if (!response.ok) throw new Error('Failed to search users');
       const data = await response.json();
       
@@ -85,6 +88,17 @@ function FriendsList() {
     } finally {
       setSearchLoading(false);
     }
+  };
+
+  const handleUserSearchChange = (e) => {
+    const value = e.target.value;
+    setUserSearchTerm(value);
+    handleSearchUsers(value);
+  };
+
+  const handleSelectUser = (user) => {
+    setUserSearchTerm(user.email);
+    setSearchResults([]);
   };
 
   const handleSendFriendRequest = async (receiverEmail) => {
@@ -194,22 +208,34 @@ function FriendsList() {
         <div className="add-friend-search">
           <input
             type="text"
-            placeholder="Caută utilizatori după email"
+            placeholder="Caută utilizatori după nume, prenume sau email"
             value={userSearchTerm}
-            onChange={(e) => setUserSearchTerm(e.target.value)}
+            onChange={handleUserSearchChange}
           />
           <button 
-                  onClick={() => handleSendFriendRequest(userSearchTerm)}
-                  className="send-request-btn"
-                >
-                  Trimite cerere de prietenie
-                </button>
+            onClick={() => handleSendFriendRequest(userSearchTerm)}
+            className="send-request-btn"
+            disabled={!userSearchTerm}
+          >
+            Trimite cerere de prietenie
+          </button>
         </div>
         
-        {searchResults.length > 0 && (
+        {searchLoading && (
+          <div className="search-loading">
+            <div className="spinner small"></div>
+            <p>Se caută...</p>
+          </div>
+        )}
+        
+        {!searchLoading && searchResults.length > 0 && (
           <div className="search-results">
             {searchResults.map(user => (
-              <div key={user.id} className="user-result">
+              <div 
+                key={user.id} 
+                className="user-result"
+                onClick={() => handleSelectUser(user)}
+              >
                 <div className="user-info">
                   <img src={user.avatar} alt={user.name} className="user-avatar" />
                   <div>
@@ -217,12 +243,6 @@ function FriendsList() {
                     <p>{user.email}</p>
                   </div>
                 </div>
-                <button 
-                  onClick={() => handleSendFriendRequest(userSearchTerm)}
-                  className="send-request-btn"
-                >
-                  Trimite cerere de prietenie
-                </button>
               </div>
             ))}
           </div>
@@ -330,5 +350,5 @@ function FriendsList() {
     </div>
   );
 }
-//    
+
 export default FriendsList;

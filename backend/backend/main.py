@@ -94,7 +94,7 @@ async def upload_photo(
     image_bytes = await image_file.read()
 
     new_photo = Foto(
-        id_user=id_user,
+        id_user=id_user,  
         caption=caption,
         status=status,
         image_data=image_bytes
@@ -151,7 +151,7 @@ def reset_password(request: ResetPasswordRequest, db: Session = Depends(get_db))
 
     return {"message": "Password reset successfully", "new_password": new_password}
 #   SearchHelp
-@app.get("/get_friends/{id_user}/{searchstring}", response_model=list[FriendInfo])
+@app.get("/get_friends/{id_user}/{searchstring}", response_model=List[FriendInfo])
 def search_potential_friends(id_user: int, searchstring: str, db: Session = Depends(get_db)):
     friend_ids = db.query(Friendships).filter(
         (Friendships.id_user1 == id_user) | (Friendships.id_user2 == id_user)
