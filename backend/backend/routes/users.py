@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, Header
 from sqlalchemy.orm import Session
 from passlib.context import CryptContext
 from database import SessionLocal
@@ -9,6 +9,10 @@ from schemas import UserLogin
 from passwords import verify_password
 from models import AlbumPhoto, Foto, Album
 from schemas import AddPhotosToAlbum
+from session_store import create_session
+from session_store import delete_session
+from session_store import get_user_id_by_token
+import uuid
 
 router = APIRouter()
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -47,18 +51,38 @@ def register(user_data: UserCreate, db: Session = Depends(get_db)):
 @router.post("/login")
 def login(credentials: UserLogin, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.email == credentials.email).first()
-    if not user:
+    if not user or not verify_password(credentials.parola, user.hash_parola):
         raise HTTPException(status_code=401, detail="Email sau parolă incorecte")
 
-    if not verify_password(credentials.parola, user.hash_parola):
-        raise HTTPException(status_code=401, detail="Email sau parolă incorecte")
-
+    token = create_session(user.id_user)
     return {
-        "message": "Te-ai conectat, man",
-        "user_id": user.id_user,
+        "message": "Autentificare reușită",
+        "token": token,
+        "user_id": user.id_user
+    }
+
+@router.post("/logout")
+def logout(Authorization: str = Header(...)):
+    token = Authorization.replace("Bearer ", "")
+    delete_session(token)
+    return {"message": "Delogare reușită"}
+def get_current_user(Authorization: str = Header(...)) -> int:
+    token = Authorization.replace("Bearer ", "")
+    user_id = get_user_id_by_token(token)
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Token invalid sau expirat")
+    return user_id
+
+@router.get("/me")
+def get_logged_in_user(user_id: int = Depends(get_current_user), db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.id_user == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="Utilizatorul nu există")
+    return {
+        "id": user.id_user,
         "nume": user.nume,
-        "prenume": user.prenume,
-        "email": user.email
+        "email": user.email,
+        "moderator": user.moderator
     }
 
 @router.post("/album/add-photos")
