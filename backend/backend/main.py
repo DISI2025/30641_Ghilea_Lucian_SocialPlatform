@@ -150,10 +150,9 @@ def reset_password(request: ResetPasswordRequest, db: Session = Depends(get_db))
     db.commit()
 
     return {"message": "Password reset successfully", "new_password": new_password}
-
+#   SearchHelp
 @app.get("/get_friends/{id_user}/{searchstring}", response_model=list[FriendInfo])
 def search_potential_friends(id_user: int, searchstring: str, db: Session = Depends(get_db)):
-    # IDs to exclude
     friend_ids = db.query(Friendships).filter(
         (Friendships.id_user1 == id_user) | (Friendships.id_user2 == id_user)
     ).all()
@@ -164,8 +163,6 @@ def search_potential_friends(id_user: int, searchstring: str, db: Session = Depe
             already_friends_ids.append(f.id_user2)
         else:
             already_friends_ids.append(f.id_user1)
-
-    # Get friend request connections
     pending_requests = db.query(FriendRequest).filter(
         or_(
             and_(FriendRequest.id_sender == id_user),
@@ -179,10 +176,8 @@ def search_potential_friends(id_user: int, searchstring: str, db: Session = Depe
         else:
             already_friends_ids.append(r.id_sender)
 
-    # Final list of IDs to exclude
     exclude_ids = set(already_friends_ids + [id_user])
 
-    # Search for users matching string but not in excluded list
     results = db.query(User).filter(
         or_(
             User.nume.ilike(f"%{searchstring}%"),
@@ -193,21 +188,17 @@ def search_potential_friends(id_user: int, searchstring: str, db: Session = Depe
     ).limit(5).all()
 
     return results
-#returneaza o lista de prieteni
 @app.get("/getfriends/{id_user}", response_model=List[FriendInfo])
 def get_friends(id_user: int, db: Session = Depends(get_db)):
     friendships = db.query(Friendships).filter(
         (Friendships.id_user1 == id_user) | (Friendships.id_user2 == id_user)
     ).all()
-
     friend_ids = [
         f.id_user2 if f.id_user1 == id_user else f.id_user1 for f in friendships
     ]
-
     if not friend_ids:
         return []
     friends = db.query(User).filter(User.id_user.in_(friend_ids)).all()
-
     return friends
 
 #Returneaza o lista ordonata cu toate friendrequesturile cu statusul "PENDING"
