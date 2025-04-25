@@ -20,7 +20,7 @@ function App() {
         <Route path="/profile-mock" element={<ProfileMock />} />
         <Route path="/chat" element={<ChatPage />} />
         <Route path="/friends/:userId" element={<FriendsList />} />
-        <Route path="/create-post/:userId" element={<CreatePost />} />
+        <Route path="/create-post" element={<CreatePost />} />
       </Routes>
     </Router>
   );

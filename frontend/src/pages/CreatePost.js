@@ -1,14 +1,12 @@
+// src/components/CreatePost.js
 import { useState, useRef } from 'react';
-import { Link, useParams, useNavigate } from 'react-router-dom';
 import { FiUpload, FiX, FiImage } from 'react-icons/fi';
 import './CreatePost.css';
 
 function CreatePost() {
-  const { userId } = useParams();
   const [image, setImage] = useState(null);
   const [caption, setCaption] = useState('');
   const [previewUrl, setPreviewUrl] = useState('');
-  const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef(null);
 
   const handleImageChange = (e) => {
@@ -22,48 +20,16 @@ function CreatePost() {
   const removeImage = () => {
     setImage(null);
     setPreviewUrl('');
-    // fileInputRef.current.value = '';
+    fileInputRef.current.value = '';
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    
-    if (!image) {
-      alert('Please select an image first');
-      return;
-    }
-
-    setIsUploading(true);
-    
-    try {
-      const formData = new FormData();
-      formData.append('id_user', userId);
-      formData.append('caption', caption);
-      formData.append('status', 'public');
-      formData.append('image_file', image); 
-      const response = await fetch('http://localhost:8000/upload_photo/', {
-        method: 'POST',
-        body: formData,
-   
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || 'Upload failed');
-      }
-
-      const result = await response.json();
-      console.log('Upload success:', result);
-      alert('Photo uploaded successfully!');
-      
-      setCaption('');
-      removeImage();
-    } catch (error) {
-      console.error('Error uploading photo:', error);
-      alert(`Upload failed: ${error.message}`);
-    } finally {
-      setIsUploading(false);
-    }
+    // Aici vei adăuga logica pentru upload
+    console.log({ image, caption });
+    // Reset form after submission
+    setCaption('');
+    removeImage();
   };
 
   return (
@@ -117,16 +83,16 @@ function CreatePost() {
               type="button"
               onClick={() => fileInputRef.current.click()}
               className="upload-btn"
-              disabled={!previewUrl || isUploading}
+              disabled={!previewUrl}
             >
               <FiUpload /> Change Image
             </button>
             <button 
               type="submit" 
               className="submit-btn"
-              disabled={!image || isUploading}
+              disabled={!image}
             >
-              {isUploading ? 'Uploading...' : 'Share Post'}
+              Share Post
             </button>
           </div>
         </form>

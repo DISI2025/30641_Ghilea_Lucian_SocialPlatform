@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link , useParams } from 'react-router-dom';
 import './FriendsList.css';
 
 function FriendsList() {
@@ -8,9 +8,6 @@ function FriendsList() {
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState('friends');
-  const [userSearchTerm, setUserSearchTerm] = useState('');
-  const [searchResults, setSearchResults] = useState([]);
-  const [searchLoading, setSearchLoading] = useState(false);
   const { userId } = useParams();
 
   useEffect(() => {
@@ -26,7 +23,6 @@ function FriendsList() {
           id: friend.id_user,
           name: `${friend.prenume || ''} ${friend.nume || ''}`.trim(),
           username: friend.email ? friend.email.split('@')[0] : `user_${friend.id_user}`,
-          email: friend.email || '',
           avatar: `https://ui-avatars.com/api/?name=${friend.prenume || ''}+${friend.nume || ''}&background=random`,
           mutualFriends: Math.floor(Math.random() * 15) + 1
         }));
@@ -43,7 +39,6 @@ function FriendsList() {
           id: request.id_sender || request.id, // Use whichever field exists
           name: request.nume  || `User ${request.id_sender || request.id}`,
           username: request.prenume || `user_${request.id_sender || request.id}`,
-          email: request.email || '',
           avatar: request.avatar || `https://ui-avatars.com/api/?name=User+${request.id_sender || request.id}&background=random`
         }));
         
@@ -60,6 +55,7 @@ function FriendsList() {
 
     fetchData();
   }, [userId]);
+
 
   const handleSearchUsers = async (searchString) => {
     if (!searchString.trim()) {
@@ -122,6 +118,7 @@ function FriendsList() {
     }
   };
 
+
   const handleAcceptRequest = async (senderId) => {
     try {
       const response = await fetch(`http://localhost:8000/accept_friendrequest/${userId}/${senderId}`, {
@@ -139,7 +136,6 @@ function FriendsList() {
             id: friend.id_user,
             name: `${friend.prenume || ''} ${friend.nume || ''}`.trim(),
             username: friend.email ? friend.email.split('@')[0] : `user_${friend.id_user}`,
-            email: friend.email || '',
             avatar: `https://ui-avatars.com/api/?name=${friend.prenume || ''}+${friend.nume || ''}&background=random`,
             mutualFriends: Math.floor(Math.random() * 15) + 1
           }));
@@ -202,6 +198,7 @@ function FriendsList() {
         </div>
       </div>
 
+
       {/* Add Friend Section */}
       <div className="add-friend-section">
         <h2>Adaugă prieten</h2>
@@ -248,6 +245,7 @@ function FriendsList() {
           </div>
         )}
       </div>
+
 
       <div className="friends-tabs">
         <button 
@@ -313,6 +311,7 @@ function FriendsList() {
                   </div>
                   <div className="friend-details">
                     <Link to={`/profile/${request.username}`} className="friend-name">{request.name} {request.username}</Link>
+                    {/* <p className="friend-username">@{request.username}</p> */}
                   </div>
                 </div>
                 <div className="friend-actions">

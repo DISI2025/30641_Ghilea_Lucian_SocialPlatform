@@ -2,11 +2,8 @@ from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session
 import models, schemas
-from fastapi import UploadFile, File
 from typing import List
 import psycopg2
-import base64
-from fastapi import Form
 import os
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
@@ -27,7 +24,6 @@ from fastapi import HTTPException
 from sqlalchemy import func
 from routes import users
 from routes import albums
-from sqlalchemy import or_, and_
 
 
 # # Database connection string (adjust if necessary)
@@ -83,15 +79,13 @@ def update_profile(id_user: int, profile: schemas.UserProfileUpdate, db: Session
     db.commit()
     return {"message": "Profile updated successfully"}
 
-@app.post("/upload_photo/")
-async def upload_photo(
-    id_user: int = Form(...),
-    caption: str = Form(...),
-    status: str = Form(...),
-    image_file: UploadFile = File(...),
-    db: Session = Depends(get_db)
-):
-    image_bytes = await image_file.read()
+@app.post("/upload_photo_json/")
+def upload_photo(photo: PhotoCreate, db: Session = Depends(get_db)):
+    if not os.path.isfile(photo.image_data):
+        raise HTTPException(status_code=400, detail="Image path not found")
+
+    with open(photo.image_data, "rb") as file:
+        image_bytes = file.read()
 
     new_photo = Foto(
         id_user=id_user,  
@@ -114,28 +108,6 @@ def get_photo(photo_id: int, db: Session = Depends(get_db)):
     return Response(content=photo.image_data, media_type="image/jpeg")
 
 
-@app.get("/get_photos_by_user/{id_user}")
-def get_photos_by_user(id_user: int, db: Session = Depends(get_db)):
-    photos = db.query(Foto).filter(Foto.id_user == id_user).all()
-
-    if not photos:
-        raise HTTPException(status_code=404, detail="No photos found for this user")
-
-    photo_list = []
-    for photo in photos:
-        if photo.image_data:
-            base64_image = base64.b64encode(photo.image_data).decode("utf-8")
-            photo_list.append({
-                "photo_id": photo.id,
-                "caption": photo.caption,
-                "status": photo.status,
-                "created_at": photo.created_at,
-                "image_base64": base64_image
-            })
-
-    return {"photos": photo_list}
-
-
 @app.post("/reset-password")
 def reset_password(request: ResetPasswordRequest, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.email == request.email).first()
@@ -150,6 +122,7 @@ def reset_password(request: ResetPasswordRequest, db: Session = Depends(get_db))
     db.commit()
 
     return {"message": "Password reset successfully", "new_password": new_password}
+
 #   SearchHelp
 @app.get("/get_friends/{id_user}/{searchstring}", response_model=List[FriendInfo])
 def search_potential_friends(id_user: int, searchstring: str, db: Session = Depends(get_db)):
@@ -188,17 +161,21 @@ def search_potential_friends(id_user: int, searchstring: str, db: Session = Depe
     ).limit(5).all()
 
     return results
+
 @app.get("/getfriends/{id_user}", response_model=List[FriendInfo])
 def get_friends(id_user: int, db: Session = Depends(get_db)):
     friendships = db.query(Friendships).filter(
         (Friendships.id_user1 == id_user) | (Friendships.id_user2 == id_user)
     ).all()
+
     friend_ids = [
         f.id_user2 if f.id_user1 == id_user else f.id_user1 for f in friendships
     ]
+
     if not friend_ids:
         return []
     friends = db.query(User).filter(User.id_user.in_(friend_ids)).all()
+
     return friends
 
 #Returneaza o lista ordonata cu toate friendrequesturile cu statusul "PENDING"
@@ -279,7 +256,7 @@ def send_friend_request(id_sender: int, email_receiver: str, db: Session = Depen
         id=new_id,
         id_sender=id_sender,
         id_receiver=receiver.id_user,
-        status="pending",
+        status="PENDING",
         created_at=datetime.datetime.now()
     )
 
