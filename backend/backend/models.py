@@ -26,8 +26,7 @@ class Foto(Base):
     url = Column(Text, nullable=True)
     caption = Column(String(255), nullable=True)
     status = Column(String(64), nullable=True)
-    created_at = Column(TIMESTAMP, default=datetime)
-    image_data = Column(LargeBinary)  # New column for image BLOB
+    created_at = Column(TIMESTAMP, default=datetime.utcnow)
 
 class Friendships(Base):
     __tablename__ = "friendships"
