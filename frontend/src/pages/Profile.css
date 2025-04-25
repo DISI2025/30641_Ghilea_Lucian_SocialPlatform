@@ -120,7 +120,7 @@
     background: #262626;
   }
   
-  .posts-grid {
+  .feed-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 20px;
@@ -162,13 +162,13 @@
     margin: 0 10px;
   }
   
-  .no-posts {
+  .no-feed {
     grid-column: 1 / -1;
     text-align: center;
     padding: 60px 0;
   }
   
-  .no-posts p {
+  .no-feed p {
     font-size: 18px;
     color: #666;
     margin-bottom: 20px;
@@ -213,7 +213,7 @@
       margin-right: auto;
     }
     
-    .posts-grid {
+    .feed-grid {
       gap: 2px;
     }
   }
@@ -299,7 +299,7 @@
   }
   
   /* Buton mare pentru primul post */
-  .no-posts .create-post-btn.large {
+  .no-feed .create-post-btn.large {
     display: inline-flex;
     align-items: center;
     gap: 8px;
@@ -308,8 +308,7 @@
     margin-top: 20px;
   }
   
-  /* Layout pentru grid posts */
-  .posts-grid {
+  .feed-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 5px;

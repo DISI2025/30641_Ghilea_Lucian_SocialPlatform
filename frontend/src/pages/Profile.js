@@ -9,12 +9,14 @@ function Profile() {
   const [profile, setProfile] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isFollowing, setIsFollowing] = useState(false);
-  const [posts, setPosts] = useState([]);
+  const [feed, setFeed] = useState([]);
   const [photos, setPhotos] = useState([]); 
-  const [activeTab, setActiveTab] = useState('posts'); 
+  const [activeTab, setActiveTab] = useState('feed'); 
   const [selectedPhoto, setSelectedPhoto] = useState(null);
 const [isModalOpen, setIsModalOpen] = useState(false);
   const navigate = useNavigate();
+  const [friendsCount, setFriendsCount] = useState(0);
+  const [photosCount, setPhotosCount] = useState(0);
 
   // Poze default
   const defaultAvatar = 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png';
@@ -35,10 +37,10 @@ const [isModalOpen, setIsModalOpen] = useState(false);
       }
     };
 
-    const fetchPosts = async () => {
-      const response = await fetch(`http://127.0.0.1:8000/profile/${userId}/posts`);
+    const fetchFeed = async () => {
+      const response = await fetch(`http://127.0.0.1:8000/profile/${userId}/feed`);
       const data = await response.json();
-      setPosts(data);
+      setFeed(data);
     };
 
     const fetchPhotos = async () => {
@@ -51,9 +53,31 @@ const [isModalOpen, setIsModalOpen] = useState(false);
         console.error('Error fetching photos:', error);
       }
     };
-
+    const fetchFriendsCount = async () => {
+      try {
+        const response = await fetch(`http://localhost:8000/getfriends/${userId}`);
+        if (!response.ok) throw new Error('Failed to fetch friends');
+        const data = await response.json();
+        setFriendsCount(data.length); // lungimea array-ului = nr. prieteni
+      } catch (error) {
+        console.error('Error fetching friends count:', error);
+      }
+    };
+    const fetchPhotosCount = async () => {
+      try {
+        const response = await fetch(`http://127.0.0.1:8000/get_photos_by_user/${userId}`);
+        if (!response.ok) throw new Error('Failed to fetch photos');
+        const data = await response.json();
+        setPhotosCount(data.photos ? data.photos.length : 0); // Numărul de fotografii
+      } catch (error) {
+        console.error('Error fetching photos count:', error);
+      }
+    };
+    
+    fetchPhotosCount(); 
+    fetchFriendsCount();
     fetchProfile();
-    fetchPosts();
+    fetchFeed();
     fetchPhotos(); 
   }, [userId]);
 
@@ -104,11 +128,11 @@ const [isModalOpen, setIsModalOpen] = useState(false);
           
           <div className="profile-stats">
             <div>
-              <strong>{profile.postsCount || 0}</strong>
-              <span>Posts</span>
+              <strong>{photosCount}</strong>
+              <span>Photos</span>
             </div>
             <div onClick={() => navigate(`/friends/${userId}`)} style={{cursor: 'pointer'}}>
-              <strong>{profile.followersCount || 0}</strong>
+              <strong>{friendsCount}</strong>
               <span>Friends</span>
             </div>
           </div>
@@ -139,10 +163,10 @@ const [isModalOpen, setIsModalOpen] = useState(false);
       <div className="profile-content">
         <div className="profile-nav">
           <button 
-            className={activeTab === 'posts' ? 'active' : ''}
-            onClick={() => setActiveTab('posts')}
+            className={activeTab === 'feed' ? 'active' : ''}
+            onClick={() => setActiveTab('feed')}
           >
-            Posts
+            Feed
           </button>
           <button 
             className={activeTab === 'photos' ? 'active' : ''}
@@ -151,17 +175,17 @@ const [isModalOpen, setIsModalOpen] = useState(false);
             Photos
           </button>
           <button 
-            className={activeTab === 'saved' ? 'active' : ''}
-            onClick={() => setActiveTab('saved')}
+            className={activeTab === 'albums' ? 'active' : ''}
+            onClick={() => setActiveTab('albums')}
           >
-            Saved
+            Albums
           </button>
         </div>
         
-        {activeTab === 'posts' && (
-          <div className="posts-grid">
-            {posts.length > 0 ? (
-              posts.map(post => (
+        {activeTab === 'feed' && (
+          <div className="feed-grid">
+            {feed.length > 0 ? (
+              feed.map(post => (
                 <div key={post.id} className="post-thumbnail">
                   <img 
                     src={post.image || defaultPostImage} 
@@ -177,13 +201,8 @@ const [isModalOpen, setIsModalOpen] = useState(false);
                 </div>
               ))
             ) : (
-              <div className="no-posts">
-                <p>No posts yet</p>
-                {true && (
-                  <Link to={`/create-post/${userId}`} className="create-post-btn large">
-                    <i className="fas fa-plus"></i> Create your first post
-                  </Link>
-                )}
+              <div className="no-feed">
+                <p>Not implemented yet</p>
               </div>
             )}
           </div>
@@ -215,9 +234,9 @@ const [isModalOpen, setIsModalOpen] = useState(false);
         </div>
       )}
         
-        {activeTab === 'saved' && (
-          <div className="saved-content">
-            <p>Saved content will appear here</p>
+        {activeTab === 'albums' && (
+          <div className="albums-content">
+            <p>Albums content will appear here</p>
           </div>
         )}
 
