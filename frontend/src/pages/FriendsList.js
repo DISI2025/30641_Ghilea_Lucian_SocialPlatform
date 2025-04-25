@@ -56,6 +56,69 @@ function FriendsList() {
     fetchData();
   }, [userId]);
 
+
+  const handleSearchUsers = async (searchString) => {
+    if (!searchString.trim()) {
+      setSearchResults([]);
+      return;
+    }
+    
+    setSearchLoading(true);
+    try {
+      const response = await fetch(`http://localhost:8000/get_friends/${userId}/${searchString}`);
+      if (!response.ok) throw new Error('Failed to search users');
+      const data = await response.json();
+      
+      const formattedResults = data.map(user => ({
+        id: user.id_user,
+        name: `${user.prenume || ''} ${user.nume || ''}`.trim(),
+        username: user.email ? user.email.split('@')[0] : `user_${user.id_user}`,
+        email: user.email || '',
+        avatar: `https://ui-avatars.com/api/?name=${user.prenume || ''}+${user.nume || ''}&background=random`
+      }));
+      
+      setSearchResults(formattedResults);
+    } catch (error) {
+      console.error('Error searching users:', error);
+      setSearchResults([]);
+    } finally {
+      setSearchLoading(false);
+    }
+  };
+
+  const handleUserSearchChange = (e) => {
+    const value = e.target.value;
+    setUserSearchTerm(value);
+    handleSearchUsers(value);
+  };
+
+  const handleSelectUser = (user) => {
+    setUserSearchTerm(user.email);
+    setSearchResults([]);
+  };
+
+  const handleSendFriendRequest = async (receiverEmail) => {
+    try {
+      const response = await fetch(`http://localhost:8000/send_friend_request/${userId}/${receiverEmail}`, {
+        method: 'POST'
+      });
+      
+      if (response.ok) {
+        alert('Cerere de prietenie trimisă cu succes!');
+        // Clear search results
+        setSearchResults([]);
+        setUserSearchTerm('');
+      } else {
+        const errorData = await response.json();
+        alert(errorData.message || 'Eroare la trimiterea cererii de prietenie');
+      }
+    } catch (error) {
+      console.error('Error sending friend request:', error);
+      alert('A apărut o eroare la trimiterea cererii de prietenie');
+    }
+  };
+
+
   const handleAcceptRequest = async (senderId) => {
     try {
       const response = await fetch(`http://localhost:8000/accept_friendrequest/${userId}/${senderId}`, {
@@ -134,6 +197,55 @@ function FriendsList() {
           </svg>
         </div>
       </div>
+
+
+      {/* Add Friend Section */}
+      <div className="add-friend-section">
+        <h2>Adaugă prieten</h2>
+        <div className="add-friend-search">
+          <input
+            type="text"
+            placeholder="Caută utilizatori după nume, prenume sau email"
+            value={userSearchTerm}
+            onChange={handleUserSearchChange}
+          />
+          <button 
+            onClick={() => handleSendFriendRequest(userSearchTerm)}
+            className="send-request-btn"
+            disabled={!userSearchTerm}
+          >
+            Trimite cerere de prietenie
+          </button>
+        </div>
+        
+        {searchLoading && (
+          <div className="search-loading">
+            <div className="spinner small"></div>
+            <p>Se caută...</p>
+          </div>
+        )}
+        
+        {!searchLoading && searchResults.length > 0 && (
+          <div className="search-results">
+            {searchResults.map(user => (
+              <div 
+                key={user.id} 
+                className="user-result"
+                onClick={() => handleSelectUser(user)}
+              >
+                <div className="user-info">
+                  <img src={user.avatar} alt={user.name} className="user-avatar" />
+                  <div>
+                    <h4>{user.name}</h4>
+                    <p>{user.email}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
 
       <div className="friends-tabs">
         <button 
