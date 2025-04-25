@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link , useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import './FriendsList.css';
 
 function FriendsList() {
@@ -8,6 +8,9 @@ function FriendsList() {
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState('friends');
+  const [userSearchTerm, setUserSearchTerm] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [searchLoading, setSearchLoading] = useState(false);
   const { userId } = useParams();
 
   useEffect(() => {
@@ -23,6 +26,7 @@ function FriendsList() {
           id: friend.id_user,
           name: `${friend.prenume || ''} ${friend.nume || ''}`.trim(),
           username: friend.email ? friend.email.split('@')[0] : `user_${friend.id_user}`,
+          email: friend.email || '',
           avatar: `https://ui-avatars.com/api/?name=${friend.prenume || ''}+${friend.nume || ''}&background=random`,
           mutualFriends: Math.floor(Math.random() * 15) + 1
         }));
@@ -39,6 +43,7 @@ function FriendsList() {
           id: request.id_sender || request.id, // Use whichever field exists
           name: request.nume  || `User ${request.id_sender || request.id}`,
           username: request.prenume || `user_${request.id_sender || request.id}`,
+          email: request.email || '',
           avatar: request.avatar || `https://ui-avatars.com/api/?name=User+${request.id_sender || request.id}&background=random`
         }));
         
@@ -55,6 +60,53 @@ function FriendsList() {
 
     fetchData();
   }, [userId]);
+
+  const handleSearchUsers = async () => {
+    if (!userSearchTerm.trim()) return;
+    
+    setSearchLoading(true);
+    try {
+      const response = await fetch(`http://localhost:8000/search_users?email=${userSearchTerm}`);
+      if (!response.ok) throw new Error('Failed to search users');
+      const data = await response.json();
+      
+      const formattedResults = data.map(user => ({
+        id: user.id_user,
+        name: `${user.prenume || ''} ${user.nume || ''}`.trim(),
+        username: user.email ? user.email.split('@')[0] : `user_${user.id_user}`,
+        email: user.email || '',
+        avatar: `https://ui-avatars.com/api/?name=${user.prenume || ''}+${user.nume || ''}&background=random`
+      }));
+      
+      setSearchResults(formattedResults);
+    } catch (error) {
+      console.error('Error searching users:', error);
+      setSearchResults([]);
+    } finally {
+      setSearchLoading(false);
+    }
+  };
+
+  const handleSendFriendRequest = async (receiverEmail) => {
+    try {
+      const response = await fetch(`http://localhost:8000/send_friend_request/${userId}/${receiverEmail}`, {
+        method: 'POST'
+      });
+      
+      if (response.ok) {
+        alert('Cerere de prietenie trimisă cu succes!');
+        // Clear search results
+        setSearchResults([]);
+        setUserSearchTerm('');
+      } else {
+        const errorData = await response.json();
+        alert(errorData.message || 'Eroare la trimiterea cererii de prietenie');
+      }
+    } catch (error) {
+      console.error('Error sending friend request:', error);
+      alert('A apărut o eroare la trimiterea cererii de prietenie');
+    }
+  };
 
   const handleAcceptRequest = async (senderId) => {
     try {
@@ -73,6 +125,7 @@ function FriendsList() {
             id: friend.id_user,
             name: `${friend.prenume || ''} ${friend.nume || ''}`.trim(),
             username: friend.email ? friend.email.split('@')[0] : `user_${friend.id_user}`,
+            email: friend.email || '',
             avatar: `https://ui-avatars.com/api/?name=${friend.prenume || ''}+${friend.nume || ''}&background=random`,
             mutualFriends: Math.floor(Math.random() * 15) + 1
           }));
@@ -133,6 +186,47 @@ function FriendsList() {
             <path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 0 0 1.48-5.34c-.47-2.78-2.79-5-5.59-5.34a6.505 6.505 0 0 0-7.27 7.27c.34 2.8 2.56 5.12 5.34 5.59a6.5 6.5 0 0 0 5.34-1.48l.27.28v.79l4.25 4.25c.41.41 1.08.41 1.49 0 .41-.41.41-1.08 0-1.49L15.5 14zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
           </svg>
         </div>
+      </div>
+
+      {/* Add Friend Section */}
+      <div className="add-friend-section">
+        <h2>Adaugă prieten</h2>
+        <div className="add-friend-search">
+          <input
+            type="text"
+            placeholder="Caută utilizatori după email"
+            value={userSearchTerm}
+            onChange={(e) => setUserSearchTerm(e.target.value)}
+          />
+          <button 
+                  onClick={() => handleSendFriendRequest(userSearchTerm)}
+                  className="send-request-btn"
+                >
+                  Trimite cerere de prietenie
+                </button>
+        </div>
+        
+        {searchResults.length > 0 && (
+          <div className="search-results">
+            {searchResults.map(user => (
+              <div key={user.id} className="user-result">
+                <div className="user-info">
+                  <img src={user.avatar} alt={user.name} className="user-avatar" />
+                  <div>
+                    <h4>{user.name}</h4>
+                    <p>{user.email}</p>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => handleSendFriendRequest(userSearchTerm)}
+                  className="send-request-btn"
+                >
+                  Trimite cerere de prietenie
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="friends-tabs">
@@ -199,7 +293,6 @@ function FriendsList() {
                   </div>
                   <div className="friend-details">
                     <Link to={`/profile/${request.username}`} className="friend-name">{request.name} {request.username}</Link>
-                    {/* <p className="friend-username">@{request.username}</p> */}
                   </div>
                 </div>
                 <div className="friend-actions">

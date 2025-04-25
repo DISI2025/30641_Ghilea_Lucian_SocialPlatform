@@ -91,7 +91,7 @@ async def upload_photo(
     db: Session = Depends(get_db)
 ):
     image_bytes = await image_file.read()
-    
+
     new_photo = Foto(
         id_user=id_user,
         caption=caption,
@@ -244,7 +244,7 @@ def send_friend_request(id_sender: int, email_receiver: str, db: Session = Depen
         id=new_id,
         id_sender=id_sender,
         id_receiver=receiver.id_user,
-        status="PENDING",
+        status="pending",
         created_at=datetime.datetime.now()
     )
 
