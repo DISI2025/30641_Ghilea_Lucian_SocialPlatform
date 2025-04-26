@@ -7,6 +7,7 @@ import ProfileMock from "./pages/ProfileMock"
 import ChatPage from './pages/ChatPage';
 import FriendsList from './pages/FriendsList';
 import CreatePost from "./pages/CreatePost";
+import ProfileUpdate from "./pages/ProfileUpdate";
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
         <Route path="/chat" element={<ChatPage />} />
         <Route path="/friends/:userId" element={<FriendsList />} />
         <Route path="/create-post/:userId" element={<CreatePost />} />
+        <Route path="/edit-profile/:userId" element={<ProfileUpdate />} /> 
       </Routes>
     </Router>
   );

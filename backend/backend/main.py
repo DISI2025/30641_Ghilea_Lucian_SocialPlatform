@@ -62,13 +62,6 @@ def get_db():
     finally:
         db.close()
 
-@app.get("/profile/{id_user}", response_model=schemas.UserProfileResponse)
-def get_profile(id_user: int, db: Session = Depends(get_db)):
-    user = db.query(models.User).filter(models.User.id_user == id_user).first()
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-    return user
-
 @app.post("/profile/{id_user}")
 def update_profile(id_user: int, profile: schemas.UserProfileUpdate, db: Session = Depends(get_db)):
     user = db.query(models.User).filter(models.User.id_user == id_user).first()
@@ -77,6 +70,8 @@ def update_profile(id_user: int, profile: schemas.UserProfileUpdate, db: Session
 
     if profile.nume is not None:
         user.nume = profile.nume
+    if profile.prenume is not None:
+        user.prenume = profile.prenume
     if profile.data_nasterii is not None:
         user.data_nasterii = profile.data_nasterii
     if profile.bio is not None:
@@ -84,6 +79,13 @@ def update_profile(id_user: int, profile: schemas.UserProfileUpdate, db: Session
 
     db.commit()
     return {"message": "Profile updated successfully"}
+
+@app.get("/profile/{id_user}", response_model=schemas.UserProfileResponse)
+def get_profile(id_user: int, db: Session = Depends(get_db)):
+    user = db.query(models.User).filter(models.User.id_user == id_user).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return user
 
 
 @app.post("/upload_photo/")
@@ -118,7 +120,7 @@ def get_photo(photo_id: int, db: Session = Depends(get_db)):
 
 @app.get("/get_photos_by_user/{id_user}")
 def get_photos_by_user(id_user: int, db: Session = Depends(get_db)):
-    photos = db.query(Foto).filter(Foto.id_user == id_user).all()
+    photos = db.query(Foto).filter(Foto.id_user == id_user).order_by(desc(Foto.created_at)).all()
 
     if not photos:
         raise HTTPException(status_code=404, detail="No photos found for this user")

@@ -12,6 +12,7 @@ class UserLogin(BaseModel):
 
 class UserProfileUpdate(BaseModel):
     nume: Optional[str] = None
+    prenume: Optional[str] = None
     data_nasterii: Optional[date] = None
     bio: Optional[str] = None
 
@@ -73,6 +74,10 @@ class PendingFriendRequest(BaseModel):
     prenume: str
     created_at: datetime
 
+class AlbumSummary(BaseModel):
+    id: int
+    nume: str
+    foto_count: int
 
 model_config = {
         "from_attributes": True
