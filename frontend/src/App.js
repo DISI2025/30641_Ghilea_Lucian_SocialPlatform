@@ -8,6 +8,7 @@ import ChatPage from './pages/ChatPage';
 import FriendsList from './pages/FriendsList';
 import CreatePost from "./pages/CreatePost";
 import ProfileUpdate from "./pages/ProfileUpdate";
+import Album from "./pages/Album";
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
         <Route path="/friends/:userId" element={<FriendsList />} />
         <Route path="/create-post/:userId" element={<CreatePost />} />
         <Route path="/edit-profile/:userId" element={<ProfileUpdate />} /> 
+        <Route path=":userId/album/:albumId" element={<Album />} /> 
       </Routes>
     </Router>
   );

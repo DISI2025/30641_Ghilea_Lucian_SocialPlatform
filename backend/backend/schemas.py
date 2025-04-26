@@ -79,6 +79,12 @@ class AlbumSummary(BaseModel):
     nume: str
     foto_count: int
 
+class FotoInAlbum(BaseModel):
+    id_foto: int
+    caption: Optional[str]
+    added_at: datetime
+    image_base64: str
+
 model_config = {
         "from_attributes": True
     }

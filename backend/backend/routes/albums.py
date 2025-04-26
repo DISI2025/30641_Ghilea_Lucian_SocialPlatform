@@ -1,8 +1,10 @@
+import base64
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from database import SessionLocal
 from models import Album, Foto, AlbumPhoto
-from schemas import AlbumCreate, AlbumSummary
+from schemas import AlbumCreate, AlbumSummary, FotoInAlbum
 from datetime import datetime
 from sqlalchemy import func
 from typing import List
@@ -43,3 +45,33 @@ def get_user_albums_with_photo_count(id_user: int, db: Session = Depends(get_db)
     ).group_by(Album.id).order_by(Album.id.desc()).all()
 
     return results
+
+#Toate pozele dintr-un album
+@router.get("/all_fotos/{id_album}", response_model=List[FotoInAlbum])
+def get_photos_in_album(id_album: int, db: Session = Depends(get_db)):
+    photos_in_album = db.query(
+        Foto.id.label("id_foto"),
+        Foto.caption,
+        AlbumPhoto.added_at,
+        Foto.image_data
+    ).join(
+        AlbumPhoto, AlbumPhoto.id_foto == Foto.id
+    ).filter(
+        AlbumPhoto.id_album == id_album
+    ).order_by(
+        AlbumPhoto.added_at.desc()
+    ).all()
+
+
+    result = []
+    for photo in photos_in_album:
+        base64_image = base64.b64encode(photo.image_data).decode("utf-8")
+        result.append(FotoInAlbum(
+            id_foto=photo.id_foto,
+            caption=photo.caption,
+            added_at=photo.added_at,
+            image_base64=base64_image
+        ))
+
+    return result
+
