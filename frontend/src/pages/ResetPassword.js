@@ -7,30 +7,33 @@ function ResetPassword() {
   const [isLoading, setIsLoading] = useState(false);
   const [newPassword, setNewPassword] = useState("");
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     setMessage("");
     setNewPassword("");
 
-    fetch("http://127.0.0.1:8000/reset-password", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email }),
-    })
-      .then((res) => {
-        if (!res.ok) throw new Error("Eroare la resetarea parolei");
-        return res.json();
-      })
-      .then((data) => {
-        setMessage("Parolă resetată cu succes!");
-        setNewPassword(data.newPassword || "P4$$w0rdT3mp"); // Example if backend doesn't return one
-      })
-      .catch((err) => {
-        console.error(err);
-        setMessage(err.message || "Resetare parolă eșuată");
-      })
-      .finally(() => setIsLoading(false));
+    try {
+      const response = await fetch("http://127.0.0.1:8000/reset-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || "Eroare la resetarea parolei");
+      }
+
+      const data = await response.json();
+      setMessage(data.message || "Parolă resetată cu succes!");
+      setNewPassword(data.new_password); // Note the underscore to match Python convention
+    } catch (err) {
+      console.error(err);
+      setMessage(err.message || "Resetare parolă eșuată");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -60,7 +63,7 @@ function ResetPassword() {
         </form>
         
         {message && (
-          <div className={`message ${message.includes("eșuată") ? "error" : "success"}`}>
+          <div className={`message ${message.includes("success") ? "success" : "error"}`}>
             {message}
           </div>
         )}

@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, Date, Boolean, ForeignKey, Text, TIMESTAMP, LargeBinary, PrimaryKeyConstraint
 from sqlalchemy.ext.declarative import declarative_base
-from datetime import datetime
+import datetime
 
 Base = declarative_base()
 
@@ -47,14 +47,14 @@ class Album(Base):
     id_user = Column(Integer, ForeignKey("users.id_user"), nullable=False)
     nume = Column(String(255), nullable=False)
     vizibilitate = Column(String(50), default="privat")
-    created_at = Column(TIMESTAMP, default=datetime.utcnow)
+    created_at = Column(TIMESTAMP, default=datetime.datetime.now())
 
 class AlbumPhoto(Base):
     __tablename__ = "album_photos"
 
     id_album = Column(Integer, ForeignKey("albums.id", ondelete="CASCADE"), primary_key=True)
     id_foto = Column(Integer, ForeignKey("fotos.id", ondelete="CASCADE"), primary_key=True)
-    added_at = Column(TIMESTAMP, default=datetime.utcnow)
+    added_at = Column(TIMESTAMP, default=datetime.datetime.now())
 
 class FriendRequest(Base):
     __tablename__ = "friend_requests"

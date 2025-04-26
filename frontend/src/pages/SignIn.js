@@ -1,28 +1,40 @@
 import { useState } from "react";
-import { Link } from "react-router-dom"; // Import Link for navigation
-import "./SignIn.css"; // Your existing CSS file
+import { Link, useNavigate } from "react-router-dom"; // Adăugat useNavigate
+import "./SignIn.css";
 
 function SignIn() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate(); // Hook pentru navigare
 
   const handleSubmit = (e) => {
     e.preventDefault();
     setIsLoading(true);
     setMessage("");
 
-    fetch("http://127.0.0.1:8000/signin", {
+    fetch("http://localhost:8000/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({ 
+        email: email, 
+        parola: password
+      }),
     })
       .then((res) => {
         if (!res.ok) throw new Error("Eroare la autentificare");
         return res.json();
       })
-      .then((data) => setMessage(data.message || "Autentificare reușită!"))
+      .then((data) => {
+        setMessage("Autentificare reușită!");
+        
+        // Presupunem că backend-ul returnează un obiect cu userid
+        if (data.user_id) {
+          // Redirecționează către pagina de profil
+          navigate(`/profile/${data.user_id}`);
+        }
+      })
       .catch((err) => {
         console.error(err);
         setMessage(err.message || "Autentificare eșuată");
@@ -30,6 +42,7 @@ function SignIn() {
       .finally(() => setIsLoading(false));
   };
 
+  // Restul codului rămâne la fel...
   return (
     <div className="signin-container">
       <div className="signin-card">
