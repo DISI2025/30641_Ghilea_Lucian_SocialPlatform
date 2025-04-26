@@ -17,9 +17,9 @@ function EditProfile() {
 
   useEffect(() => {
     if (!userId) {
-      setMessage("Error: No user ID provided. Redirecting...");
-      setTimeout(() => navigate("/"), 2000);
-      return;
+    //   setMessage("Error: No user ID provided. Redirecting...");
+    //   setTimeout(() => navigate("/"), 2000);
+    //   return;
     }
 
     const fetchProfile = async () => {

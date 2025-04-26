@@ -316,7 +316,7 @@ function Profile() {
                   <div 
                     key={album.id} 
                     className="album-thumbnail"
-                    onClick={() => navigate(`/album/${album.id}`)}
+                    onClick={() => navigate(`/${userId}/album/${album.id}`)}
                   >
                     <img 
                       src={defaultAlbumCover} 
