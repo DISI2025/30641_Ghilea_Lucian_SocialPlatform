@@ -17,6 +17,7 @@ import uuid
 router = APIRouter()
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
+
 # Obține sesiunea DB
 def get_db():
     db = SessionLocal()
@@ -24,6 +25,7 @@ def get_db():
         yield db
     finally:
         db.close()
+
 
 # Endpoint de înregistrare
 @router.post("/register")
@@ -48,6 +50,7 @@ def register(user_data: UserCreate, db: Session = Depends(get_db)):
 
     return {"message": "Utilizator înregistrat cu succes", "user_id": new_user.id_user}
 
+
 @router.post("/login")
 def login(credentials: UserLogin, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.email == credentials.email).first()
@@ -61,17 +64,21 @@ def login(credentials: UserLogin, db: Session = Depends(get_db)):
         "user_id": user.id_user
     }
 
+
 @router.post("/logout")
 def logout(Authorization: str = Header(...)):
     token = Authorization.replace("Bearer ", "")
     delete_session(token)
     return {"message": "Delogare reușită"}
+
+
 def get_current_user(Authorization: str = Header(...)) -> int:
     token = Authorization.replace("Bearer ", "")
     user_id = get_user_id_by_token(token)
     if not user_id:
         raise HTTPException(status_code=401, detail="Token invalid sau expirat")
     return user_id
+
 
 @router.get("/me")
 def get_logged_in_user(user_id: int = Depends(get_current_user), db: Session = Depends(get_db)):
@@ -84,6 +91,7 @@ def get_logged_in_user(user_id: int = Depends(get_current_user), db: Session = D
         "email": user.email,
         "moderator": user.moderator
     }
+
 
 @router.post("/album/add-photos")
 def add_photos_to_album(data: AddPhotosToAlbum, db: Session = Depends(get_db)):

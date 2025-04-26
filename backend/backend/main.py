@@ -1,7 +1,11 @@
+import base64
+
 from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy import create_engine, or_, and_
 from sqlalchemy.orm import sessionmaker, Session
 import models, schemas
+from fastapi import Form
+from fastapi import UploadFile, File
 from typing import List
 import psycopg2
 import os
@@ -12,6 +16,8 @@ from schemas import PhotoCreate
 from models import Foto, Base
 from database import SessionLocal, engine
 from datetime import date
+
+
 from passwords import generate_random_password, hash_password
 from schemas import ResetPasswordRequest, PendingFriendRequest
 from models import User
@@ -46,8 +52,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(users.router, prefix="/api")
-app.include_router(albums.router, prefix="/api")
+app.include_router(users.router, prefix="")
+app.include_router(albums.router, prefix="")
 # DB dependency
 def get_db():
     db = SessionLocal()
@@ -79,19 +85,23 @@ def update_profile(id_user: int, profile: schemas.UserProfileUpdate, db: Session
     db.commit()
     return {"message": "Profile updated successfully"}
 
-@app.post("/upload_photo_json/")
-def upload_photo(photo: PhotoCreate, db: Session = Depends(get_db)):
-    if not os.path.isfile(photo.image_data):
-        raise HTTPException(status_code=400, detail="Image path not found")
 
-    with open(photo.image_data, "rb") as file:
-        image_bytes = file.read()
+@app.post("/upload_photo/")
+async def upload_photo(
+        id_user: int = Form(...),
+        caption: str = Form(...),
+        status: str = Form(...),
+        image_file: UploadFile = File(...),
+        db: Session = Depends(get_db)
+):
+    image_bytes = await image_file.read()
 
     new_photo = Foto(
-        id_user=photo.id_user,
-        caption=photo.caption,
-        status=photo.status,
-        image_data=image_bytes
+        id_user=id_user,
+        caption=caption,
+        status=status,
+        image_data=image_bytes,
+        created_at=datetime.datetime.now(),
     )
 
     db.add(new_photo)
@@ -99,7 +109,6 @@ def upload_photo(photo: PhotoCreate, db: Session = Depends(get_db)):
     db.refresh(new_photo)
 
     return {"message": "Photo uploaded", "photo_id": new_photo.id}
-
 @app.get("/get_photo/{photo_id}")
 def get_photo(photo_id: int, db: Session = Depends(get_db)):
     photo = db.query(Foto).filter(Foto.id == photo_id).first()
@@ -107,7 +116,26 @@ def get_photo(photo_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Photo not found")
     return Response(content=photo.image_data, media_type="image/jpeg")
 
+@app.get("/get_photos_by_user/{id_user}")
+def get_photos_by_user(id_user: int, db: Session = Depends(get_db)):
+    photos = db.query(Foto).filter(Foto.id_user == id_user).all()
 
+    if not photos:
+        raise HTTPException(status_code=404, detail="No photos found for this user")
+
+    photo_list = []
+    for photo in photos:
+        if photo.image_data:
+            base64_image = base64.b64encode(photo.image_data).decode("utf-8")
+            photo_list.append({
+                "photo_id": photo.id,
+                "caption": photo.caption,
+                "status": photo.status,
+                "created_at": photo.created_at,
+                "image_base64": base64_image
+            })
+
+    return {"photos": photo_list}
 @app.post("/reset-password")
 def reset_password(request: ResetPasswordRequest, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.email == request.email).first()
