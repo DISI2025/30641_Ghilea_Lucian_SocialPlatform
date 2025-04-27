@@ -1,3 +1,4 @@
+# Task #95 - Verificare: token-ul generat este stocat în Redis și asociat cu user_id
 from fastapi import APIRouter, HTTPException, Depends, Header
 from sqlalchemy.orm import Session
 from passlib.context import CryptContext
