@@ -9,9 +9,7 @@ from schemas import UserLogin
 from passwords import verify_password
 from models import AlbumPhoto, Foto, Album
 from schemas import AddPhotosToAlbum
-from session_store import create_session
-from session_store import delete_session
-from session_store import get_user_id_by_token
+from redis_store import create_session, delete_session, get_user_id_by_token
 import uuid
 
 router = APIRouter()
