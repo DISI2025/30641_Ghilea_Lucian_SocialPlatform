@@ -30,6 +30,7 @@ from fastapi import HTTPException
 from sqlalchemy import func
 from routes import users
 from routes import albums
+from redis_config import redis_client
 
 
 # # Database connection string (adjust if necessary)
@@ -297,3 +298,8 @@ def send_friend_request(id_sender: int, email_receiver: str, db: Session = Depen
 @app.get("/")
 def read_root():
     return {"message": "Welcome to the Social Platform API"}
+
+@app.get("/test-redis")
+def test_redis():
+    redis_client.set("test", "ok")
+    return {"test": redis_client.get("test").decode()}
