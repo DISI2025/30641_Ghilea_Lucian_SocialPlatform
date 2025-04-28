@@ -1,48 +1,28 @@
 import base64
 
-from fastapi import FastAPI, Depends, HTTPException
-from sqlalchemy import create_engine, or_, and_
+from fastapi import FastAPI, Depends
+from sqlalchemy import create_engine, or_, and_, desc, func
 from sqlalchemy.orm import sessionmaker, Session
 import models, schemas
 from fastapi import Form
 from fastapi import UploadFile, File
 from typing import List
 import psycopg2
-import os
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response
-from schemas import PhotoCreate
-from models import Foto, Base
 from database import SessionLocal, engine
-from datetime import date
-
-
 from passwords import generate_random_password, hash_password
-from schemas import ResetPasswordRequest, PendingFriendRequest
-from models import User
-from models import User, Friendships, FriendRequest  # adjust based on your file structure
-from schemas import FriendInfo
+from schemas import ResetPasswordRequest, PendingFriendRequest, FriendInfo
+from models import User, Friendships, FriendRequest, Foto, Base
 from typing import List
-from sqlalchemy import desc
-import datetime
 from fastapi import HTTPException
-from sqlalchemy import func
-from routes import users
-from routes import albums
+import datetime
+from routes import users, albums
 from redis_config import redis_client
-
-
-# # Database connection string (adjust if necessary)
-# DATABASE_URL = "postgresql://postgres:admin@localhost:5432/postgres"
-#
-# # Create an engine and session
-# engine = create_engine(DATABASE_URL)
-# SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
+from cache_store import get_cached_profile, set_cached_profile
 
 models.Base.metadata.create_all(bind=engine)
-
 app = FastAPI()
 
 app.add_middleware(
@@ -53,9 +33,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 app.include_router(users.router, prefix="")
 app.include_router(albums.router, prefix="")
-# DB dependency
+
 def get_db():
     db = SessionLocal()
     try:
@@ -77,11 +58,8 @@ def update_profile(id_user: int, profile: schemas.UserProfileUpdate, db: Session
         user.data_nasterii = profile.data_nasterii
     if profile.bio is not None:
         user.bio = profile.bio
-
     db.commit()
     return {"message": "Profile updated successfully"}
-
-from cache_store import get_cached_profile, set_cached_profile
 
 @app.get("/profile/{id_user}", response_model=schemas.UserProfileResponse)
 def get_profile(id_user: int, db: Session = Depends(get_db)):
@@ -103,8 +81,6 @@ def get_profile(id_user: int, db: Session = Depends(get_db)):
     }
     set_cached_profile(id_user, response_data)
     return response_data
-
-
 
 @app.post("/upload_photo/")
 async def upload_photo(
@@ -177,7 +153,6 @@ def search_potential_friends(id_user: int, searchstring: str, db: Session = Depe
     friend_ids = db.query(Friendships).filter(
         (Friendships.id_user1 == id_user) | (Friendships.id_user2 == id_user)
     ).all()
-
     already_friends_ids = []
     for f in friend_ids:
         if f.id_user1 == id_user:
@@ -207,7 +182,6 @@ def search_potential_friends(id_user: int, searchstring: str, db: Session = Depe
         ),
         ~User.id_user.in_(exclude_ids)
     ).limit(5).all()
-
     return results
 
 @app.get("/getfriends/{id_user}", response_model=List[FriendInfo])
@@ -215,15 +189,12 @@ def get_friends(id_user: int, db: Session = Depends(get_db)):
     friendships = db.query(Friendships).filter(
         (Friendships.id_user1 == id_user) | (Friendships.id_user2 == id_user)
     ).all()
-
     friend_ids = [
         f.id_user2 if f.id_user1 == id_user else f.id_user1 for f in friendships
     ]
-
     if not friend_ids:
         return []
     friends = db.query(User).filter(User.id_user.in_(friend_ids)).all()
-
     return friends
 
 #Returneaza o lista ordonata cu toate friendrequesturile cu statusul "PENDING"
@@ -241,7 +212,6 @@ def get_pending_friend_requests(id_user: int, db: Session = Depends(get_db)):
         .order_by(desc(FriendRequest.created_at))
         .all()
     )
-
     return pending_requests
 
 @app.post("/accept_friendrequest/{id_receiver}/{id_sender}")
@@ -274,10 +244,8 @@ def decline_friend_request(id_receiver: int, id_sender: int, db: Session = Depen
 
     if not request:
         raise HTTPException(status_code=404, detail="Friend request not found")
-
     request.status = "declined"
     db.commit()
-
     return {"message": "Friend request declined"}
 
 @app.post("/send_friend_request/{id_sender}/{email_receiver}")
@@ -285,21 +253,16 @@ def send_friend_request(id_sender: int, email_receiver: str, db: Session = Depen
     receiver = db.query(User).filter(User.email == email_receiver).first()
     if not receiver:
         raise HTTPException(status_code=404, detail="Receiver not found")
-
     if receiver.id_user == id_sender:
         raise HTTPException(status_code=400, detail="Cannot send friend request to yourself")
-
     existing_request = db.query(FriendRequest).filter(
         ((FriendRequest.id_sender == id_sender) & (FriendRequest.id_receiver == receiver.id_user)) |
         ((FriendRequest.id_sender == receiver.id_user) & (FriendRequest.id_receiver == id_sender))
     ).first()
-
     if existing_request:
         raise HTTPException(status_code=400, detail="Friend request already exists")
-
     max_id = db.query(func.max(FriendRequest.id)).scalar()
     new_id = (max_id or 0) + 1
-
     new_request = FriendRequest(
         id=new_id,
         id_sender=id_sender,
@@ -307,10 +270,8 @@ def send_friend_request(id_sender: int, email_receiver: str, db: Session = Depen
         status="pending",
         created_at=datetime.datetime.now()
     )
-
     db.add(new_request)
     db.commit()
-
     return {"message": "Friend request sent", "request_id": new_id}
 @app.get("/")
 def read_root():

@@ -1,6 +1,6 @@
 import base64
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from database import SessionLocal
 from models import Album, Foto, AlbumPhoto
@@ -24,7 +24,7 @@ def create_album(album: AlbumCreate, db: Session = Depends(get_db)):
         id_user=album.id_user,
         nume=album.nume,
         vizibilitate=album.vizibilitate,
-        created_at=datetime.utcnow()
+        created_at=datetime.datetime.utc()
     )
     db.add(new_album)
     db.commit()
@@ -61,8 +61,6 @@ def get_photos_in_album(id_album: int, db: Session = Depends(get_db)):
     ).order_by(
         AlbumPhoto.added_at.desc()
     ).all()
-
-
     result = []
     for photo in photos_in_album:
         base64_image = base64.b64encode(photo.image_data).decode("utf-8")
