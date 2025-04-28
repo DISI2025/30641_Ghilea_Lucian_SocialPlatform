@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom"; // Adăugat useNavigate
+import { Link, useNavigate } from "react-router-dom"; 
 import "./SignIn.css";
 
 function SignIn() {
@@ -7,7 +7,7 @@ function SignIn() {
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const navigate = useNavigate(); // Hook pentru navigare
+  const navigate = useNavigate();
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -29,9 +29,8 @@ function SignIn() {
       .then((data) => {
         setMessage("Autentificare reușită!");
         
-        // Presupunem că backend-ul returnează un obiect cu userid
         if (data.user_id) {
-          // Redirecționează către pagina de profil
+        
           navigate(`/profile/${data.user_id}`);
         }
       })
@@ -42,7 +41,6 @@ function SignIn() {
       .finally(() => setIsLoading(false));
   };
 
-  // Restul codului rămâne la fel...
   return (
     <div className="signin-container">
       <div className="signin-card">

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import "./SignIn.css"; // Using the same style as SignIn
+import "./SignIn.css"; 
 
 function Register() {
   const [nume, setNume] = useState("");

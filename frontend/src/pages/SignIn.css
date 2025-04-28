@@ -115,7 +115,6 @@
     text-decoration: underline;
   }
 
-  /* Add these to your existing SignIn.css */
 
 .password-result {
     margin-top: 20px;
@@ -165,7 +164,6 @@
     font-weight: 500;
   }
 
-  /* Add these to your existing SignIn.css */
 
 .forgot-password {
     text-align: right;

@@ -10,21 +10,14 @@ function Album() {
   const [userPhotos, setUserPhotos] = useState([]);
   const [selectedPhotos, setSelectedPhotos] = useState([]);
   const [showPhotoSelector, setShowPhotoSelector] = useState(false);
-//   const [userId, setUserId] = useState(null);
 
   useEffect(() => {
     const fetchAlbumData = async () => {
       try {
         setIsLoading(true);
-        // First get the album to find the user ID
         const albumRes = await fetch(`http://127.0.0.1:8000/all_fotos/${albumId}`);
         if (!albumRes.ok) throw new Error('Failed to load album');
         const albumData = await albumRes.json();
-        
-        // Assuming the first photo contains user info (adjust based on your API)
-        // if (albumData.length > 0) {
-        //   setUserId(albumData[0].id_user); // Adjust based on your actual data structure
-        // }
         
         setPhotos(albumData);
       } catch (err) {
@@ -74,7 +67,6 @@ function Album() {
 
       if (!response.ok) throw new Error('Failed to add photos');
       
-      // Refresh album photos
       const photosRes = await fetch(`http://127.0.0.1:8000/all_fotos/${albumId}`);
       setPhotos(await photosRes.json());
       setSelectedPhotos([]);
@@ -86,8 +78,6 @@ function Album() {
 
   const removePhotoFromAlbum = async (photoId) => {
     try {
-      // Note: You'll need to implement a remove endpoint on your backend
-      // This is a placeholder implementation
       const response = await fetch('http://127.0.0.1:8000/album/remove-photos', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -99,7 +89,6 @@ function Album() {
 
       if (!response.ok) throw new Error('Failed to remove photo');
       
-      // Refresh album photos
       const photosRes = await fetch(`http://127.0.0.1:8000/all_fotos/${albumId}`);
       setPhotos(await photosRes.json());
     } catch (err) {

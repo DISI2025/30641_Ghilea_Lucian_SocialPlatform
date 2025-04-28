@@ -9,7 +9,6 @@ function ChatPage() {
   const [activeChat, setActiveChat] = useState(null);
   const messagesEndRef = useRef(null);
 
-  // Mock data for chats
   const mockChats = [
     {
       id: 1,
@@ -43,7 +42,6 @@ function ChatPage() {
     }
   ];
 
-  // Mock messages for active chat
   const mockMessages = {
     1: [
       { id: 1, text: "Bună! Ce mai faci?", sender: "them", time: "12:05" },
@@ -61,14 +59,12 @@ function ChatPage() {
   };
 
   useEffect(() => {
-    // Simulate loading
     setTimeout(() => {
       setIsLoading(false);
     }, 500);
   }, []);
 
   useEffect(() => {
-    // Scroll to bottom when messages change
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
@@ -91,7 +87,6 @@ function ChatPage() {
     setMessages([...messages, newMsg]);
     setNewMessage('');
 
-    // Simulate reply after 1 second
     setTimeout(() => {
       const replyMsg = {
         id: messages.length + 2,
@@ -115,7 +110,6 @@ function ChatPage() {
   return (
     <div className="chat-page">
       <div className="chat-container">
-        {/* Sidebar with chat list */}
         <div className="chat-sidebar">
           <div className="chat-header">
             <h2>Mesaje</h2>
@@ -143,7 +137,6 @@ function ChatPage() {
           </div>
         </div>
 
-        {/* Main chat area */}
         <div className="chat-main">
           {activeChat ? (
             <>

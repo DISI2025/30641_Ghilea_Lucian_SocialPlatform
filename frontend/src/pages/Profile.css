@@ -191,7 +191,6 @@
     font-weight: 600;
   }
   
-  /* Responsive design */
   @media (max-width: 768px) {
     .profile-header {
       flex-direction: column;
@@ -298,7 +297,6 @@
     background-color: #dbdbdb;
   }
   
-  /* Buton mare pentru primul post */
   .no-posts .create-post-btn.large {
     display: inline-flex;
     align-items: center;
@@ -308,7 +306,6 @@
     margin-top: 20px;
   }
   
-  /* Layout pentru grid posts */
   .posts-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -392,7 +389,6 @@
     background-color: #dbdbdb;
   }
   
-  /* Buton mare pentru primul post */
   .no-posts .create-post-btn.large {
     display: inline-flex;
     align-items: center;
@@ -402,7 +398,6 @@
     margin-top: 20px;
   }
   
-  /* Layout pentru grid posts */
   .posts-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -468,7 +463,7 @@
   
   .photo-thumbnail {
     position: relative;
-    padding-bottom: 100%; /* Aspect ratio 1:1 */
+    padding-bottom: 100%;
     overflow: hidden;
   }
   
@@ -551,12 +546,10 @@
   color: #333;
 }
 
-/* Add this to prevent scrolling when modal is open */
 body.modal-open {
   overflow: hidden;
 }
 
-/* Albums styles */
 .albums-content {
   padding: 20px;
 }

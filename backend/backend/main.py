@@ -33,8 +33,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(users.router, prefix="/api")
-app.include_router(albums.router, prefix="/api")
+
+app.include_router(users.router, prefix="")
+app.include_router(albums.router, prefix="")
+
 def get_db():
     db = SessionLocal()
     try:

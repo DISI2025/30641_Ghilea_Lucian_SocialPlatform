@@ -1,5 +1,5 @@
 import { useState } from "react";
-import "./SignIn.css"; // Reusing the same CSS as SignIn
+import "./SignIn.css";
 
 function ResetPassword() {
   const [email, setEmail] = useState("");
@@ -27,7 +27,7 @@ function ResetPassword() {
 
       const data = await response.json();
       setMessage(data.message || "Parolă resetată cu succes!");
-      setNewPassword(data.new_password); // Note the underscore to match Python convention
+      setNewPassword(data.new_password);
     } catch (err) {
       console.error(err);
       setMessage(err.message || "Resetare parolă eșuată");
