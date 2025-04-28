@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import "./ProfileUpdate.css";
 
 function EditProfile() {
-  const { userId } = useParams(); // Schimbat din id în userId
+  const { userId } = useParams();
   const navigate = useNavigate();
   const [profile, setProfile] = useState({
     nume: "",

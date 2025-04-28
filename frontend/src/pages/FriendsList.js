@@ -16,12 +16,12 @@ function FriendsList() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Fetch friends list
+      
         const friendsResponse = await fetch(`http://localhost:8000/getfriends/${userId}`);
         if (!friendsResponse.ok) throw new Error('Failed to fetch friends');
         const friendsData = await friendsResponse.json();
         
-        // Transform friends data with proper error checking
+      
         const formattedFriends = friendsData.map(friend => ({
           id: friend.id_user,
           name: `${friend.prenume || ''} ${friend.nume || ''}`.trim(),
@@ -33,14 +33,13 @@ function FriendsList() {
         
         setFriends(formattedFriends);
 
-        // Fetch pending requests
         const pendingResponse = await fetch(`http://localhost:8000/get_idling_friendrequest/${userId}`);
         if (!pendingResponse.ok) throw new Error('Failed to fetch pending requests');
         const pendingData = await pendingResponse.json();
         
-        // Transform pending requests data with proper error checking
+      
         const formattedPending = pendingData.map(request => ({
-          id: request.id_sender || request.id, // Use whichever field exists
+          id: request.id_sender || request.id,
           name: request.nume  || `User ${request.id_sender || request.id}`,
           username: request.prenume || `user_${request.id_sender || request.id}`,
           email: request.email || '',
@@ -50,7 +49,6 @@ function FriendsList() {
         setPendingRequests(formattedPending);
       } catch (error) {
         console.error('Error fetching data:', error);
-        // Set empty arrays if there's an error
         setFriends([]);
         setPendingRequests([]);
       } finally {
@@ -109,7 +107,6 @@ function FriendsList() {
       
       if (response.ok) {
         alert('Cerere de prietenie trimisă cu succes!');
-        // Clear search results
         setSearchResults([]);
         setUserSearchTerm('');
       } else {
@@ -129,9 +126,7 @@ function FriendsList() {
       });
       
       if (response.ok) {
-        // Update the pending requests list
         setPendingRequests(prev => prev.filter(req => req.id !== senderId));
-        // Optionally refresh friends list
         const refreshedResponse = await fetch(`http://localhost:8000/getfriends/${userId}`);
         if (refreshedResponse.ok) {
           const refreshedData = await refreshedResponse.json();
@@ -158,7 +153,6 @@ function FriendsList() {
       });
       
       if (response.ok) {
-        // Update the pending requests list
         setPendingRequests(prev => prev.filter(req => req.id !== senderId));
       }
     } catch (error) {
@@ -202,7 +196,6 @@ function FriendsList() {
         </div>
       </div>
 
-      {/* Add Friend Section */}
       <div className="add-friend-section">
         <h2>Adaugă prieten</h2>
         <div className="add-friend-search">

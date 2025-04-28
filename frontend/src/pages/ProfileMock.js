@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import './Profile.css'; // Reuse the same CSS
+import './Profile.css';
 
 function ProfileMock() {
   const [profile, setProfile] = useState(null);
@@ -9,7 +9,6 @@ function ProfileMock() {
   const [posts, setPosts] = useState([]);
 
   useEffect(() => {
-    // Mock profile data
     const mockProfile = {
       id: "mock-user",
       name: "Alexandra Popescu",
@@ -22,7 +21,6 @@ function ProfileMock() {
       isCurrentUser: false
     };
 
-    // Mock posts data
     const mockPosts = [
       { id: 1, image: "https://picsum.photos/id/10/500/500", likes: 124, comments: 8 },
       { id: 2, image: "https://picsum.photos/id/11/500/500", likes: 89, comments: 5 },
@@ -32,7 +30,6 @@ function ProfileMock() {
       { id: 6, image: "https://picsum.photos/id/15/500/500", likes: 92, comments: 6 }
     ];
 
-    // Simulate loading
     setTimeout(() => {
       setProfile(mockProfile);
       setPosts(mockPosts);
@@ -42,7 +39,6 @@ function ProfileMock() {
 
   const handleFollow = () => {
     setIsFollowing(!isFollowing);
-    // Update mock counter
     setProfile(prev => ({
       ...prev,
       followersCount: isFollowing ? prev.followersCount - 1 : prev.followersCount + 1

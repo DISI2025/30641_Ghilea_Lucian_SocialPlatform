@@ -21,7 +21,6 @@ function Profile() {
   const [newAlbumName, setNewAlbumName] = useState('');
   const [showCreateAlbumForm, setShowCreateAlbumForm] = useState(false);
 
-  // Default images
   const defaultAvatar = 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png';
   const defaultPostImage = 'https://cdn.pixabay.com/photo/2017/11/10/05/24/add-2935429_960_720.png';
   const defaultAlbumCover = 'https://cdn.pixabay.com/photo/2017/03/30/17/42/album-2188987_960_720.png';
@@ -133,13 +132,12 @@ function Profile() {
         body: JSON.stringify({
           id_user: userId,
           nume: newAlbumName,
-          vizibilitate: 'public' // Default visibility, can be made configurable
+          vizibilitate: 'public' 
         })
       });
 
       if (response.ok) {
         const data = await response.json();
-        // Refresh albums list
         const albumsResponse = await fetch(`http://127.0.0.1:8000/user_albums/${userId}`);
         const albumsData = await albumsResponse.json();
         setAlbums(albumsData);
