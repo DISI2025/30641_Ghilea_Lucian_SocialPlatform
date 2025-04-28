@@ -81,12 +81,29 @@ def update_profile(id_user: int, profile: schemas.UserProfileUpdate, db: Session
     db.commit()
     return {"message": "Profile updated successfully"}
 
+from cache_store import get_cached_profile, set_cached_profile
+
 @app.get("/profile/{id_user}", response_model=schemas.UserProfileResponse)
 def get_profile(id_user: int, db: Session = Depends(get_db)):
+    cached = get_cached_profile(id_user)
+    if cached:
+        return cached
+
     user = db.query(models.User).filter(models.User.id_user == id_user).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
-    return user
+
+    response_data = {
+        "id_user": user.id_user,
+        "nume": user.nume,
+        "prenume": user.prenume,
+        "email": user.email,
+        "data_nasterii": user.data_nasterii,
+        "bio": user.bio
+    }
+    set_cached_profile(id_user, response_data)
+    return response_data
+
 
 
 @app.post("/upload_photo/")
