@@ -3,13 +3,9 @@ from fastapi import APIRouter, HTTPException, Depends, Header
 from sqlalchemy.orm import Session
 from passlib.context import CryptContext
 from database import SessionLocal
-from models import User
-from schemas import UserCreate
-from passwords import hash_password
-from schemas import UserLogin
-from passwords import verify_password
-from models import AlbumPhoto, Foto, Album
-from schemas import AddPhotosToAlbum
+from models import User, AlbumPhoto, Foto, Album
+from schemas import UserCreate, UserLogin, AddPhotosToAlbum
+from passwords import verify_password, hash_password
 from redis_store import create_session, delete_session, get_user_id_by_token
 import uuid
 
@@ -46,7 +42,6 @@ def register(user_data: UserCreate, db: Session = Depends(get_db)):
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
-
     return {"message": "Utilizator înregistrat cu succes", "user_id": new_user.id_user}
 
 
@@ -90,8 +85,6 @@ def get_logged_in_user(user_id: int = Depends(get_current_user), db: Session = D
         "email": user.email,
         "moderator": user.moderator
     }
-
-
 @router.post("/album/add-photos")
 def add_photos_to_album(data: AddPhotosToAlbum, db: Session = Depends(get_db)):
     for photo_id in data.photo_ids:

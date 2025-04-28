@@ -3,7 +3,7 @@ from datetime import date
 from redis_config import redis_client
 import json
 
-CACHE_TTL_SECONDS = 60 * 5  # 5 minutes
+CACHE_TTL_SECONDS = 60 * 5
 
 def get_cached_profile(user_id: int):
     data = redis_client.get(f"profile:{user_id}")
