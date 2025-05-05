@@ -13,7 +13,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response
 from database import SessionLocal, engine
 from passwords import generate_random_password, hash_password
-from schemas import ResetPasswordRequest, PendingFriendRequest, FriendInfo, NewsFeedItemSchema
+from schemas import ResetPasswordRequest, PendingFriendRequest, FriendInfo, NewsFeedItemSchema, ConversationPreview
 from models import User, Friendships, FriendRequest, Foto, Base
 from typing import List
 from fastapi import HTTPException
@@ -317,6 +317,48 @@ def get_news_feed(id_user: int, db: Session = Depends(get_db)):
         })
 
     return result
+
+@app.get("/allCurrentConversations/{id_user}", response_model=List[ConversationPreview])
+def get_all_conversations(id_user: int, db: Session = Depends(get_db)):
+    conversations = db.query(Conversation).filter(
+        or_(
+            Conversation.id_user1 == id_user,
+            Conversation.id_user2 == id_user
+        )
+    ).order_by(Conversation.last_message_at.desc()).all()
+
+    results = []
+
+    for conv in conversations:
+        other_user_id = conv.id_user2 if conv.id_user1 == id_user else conv.id_user1
+        other_user = db.query(User).filter(User.id_user == other_user_id).first()
+
+        if not other_user:
+            continue
+        last_message = db.query(Messages).filter(
+            Messages.id_conversation == conv.id
+        ).order_by(Messages.sent_at.desc()).first()
+
+        if not last_message:
+            continue
+
+        # Poza de profil(dacă există)
+        profile_photo_base64 = None
+        if other_user.id_poza_profil:
+            profile_foto = db.query(Foto).filter(Foto.id == other_user.id_poza_profil).first()
+            if profile_foto:
+                profile_photo_base64 = base64.b64encode(profile_foto.image_data).decode("utf-8")
+
+        results.append({
+            "nume": other_user.nume,
+            "prenume": other_user.prenume,
+            "id_poza_profil": other_user.id_poza_profil,
+            "poza_profil_base64": profile_photo_base64,
+            "last_message": last_message.text,
+            "last_message_at": last_message.sent_at
+        })
+
+    return results
 @app.get("/")
 def read_root():
     return {"message": "Welcome to the Social Platform API"}

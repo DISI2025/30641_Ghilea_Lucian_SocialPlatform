@@ -92,6 +92,14 @@ class NewsFeedItemSchema(BaseModel):
     image_base64: str
     id_poza_profil: int
 
+class ConversationPreview(BaseModel):
+    nume: str
+    prenume: str
+    id_poza_profil: Optional[int]
+    poza_profil_base64: Optional[str]
+    last_message: str
+    last_message_at: datetime
+
 model_config = {
         "from_attributes": True
     }
