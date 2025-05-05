@@ -90,7 +90,7 @@ class NewsFeedItemSchema(BaseModel):
     caption: str
     created_at: datetime
     image_base64: str
-    id_poza_profil: int
+    id_poza_profil: Optional[int] = None
 
 model_config = {
         "from_attributes": True
