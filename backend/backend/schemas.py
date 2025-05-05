@@ -84,6 +84,14 @@ class FotoInAlbum(BaseModel):
     added_at: datetime
     image_base64: str
 
+class NewsFeedItemSchema(BaseModel):
+    nume: str
+    prenume: str
+    caption: str
+    created_at: datetime
+    image_base64: str
+    id_poza_profil: int
+
 model_config = {
         "from_attributes": True
     }
