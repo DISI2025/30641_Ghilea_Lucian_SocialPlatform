@@ -21,6 +21,7 @@ import datetime
 from routes import users, albums
 from redis_config import redis_client
 from cache_store import get_cached_profile, set_cached_profile
+from routes import messages
 
 models.Base.metadata.create_all(bind=engine)
 app = FastAPI()
@@ -34,8 +35,9 @@ app.add_middleware(
 )
 
 
-app.include_router(users.router, prefix="")
-app.include_router(albums.router, prefix="")
+app.include_router(users.router, prefix="/api")
+app.include_router(albums.router, prefix="/api")
+app.include_router(messages.router, prefix="/api")
 
 def get_db():
     db = SessionLocal()

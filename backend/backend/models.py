@@ -63,3 +63,23 @@ class FriendRequest(Base):
     id_receiver = Column(Integer, ForeignKey("users.id_user"), primary_key=True)
     status = Column(String, nullable=False, default="PENDING")
     created_at = Column(TIMESTAMP, default=datetime)
+
+class Message(Base):
+    __tablename__ = "messages"
+
+    id = Column(Integer, primary_key=True, index=True)
+    id_conversation = Column(Integer, ForeignKey("conversations.id"), nullable=False)
+    id_sender = Column(Integer, ForeignKey("users.id_user"), nullable=False)
+    id_receiver = Column(Integer, ForeignKey("users.id_user"), nullable=False)
+    text = Column(Text, nullable=False)
+    sent_at = Column(TIMESTAMP, default=datetime.datetime.utcnow)
+
+
+class Conversation(Base):
+    __tablename__ = "conversations"
+
+    id = Column(Integer, primary_key=True, index=True)
+    id_user1 = Column(Integer, ForeignKey("users.id_user"), nullable=False)
+    id_user2 = Column(Integer, ForeignKey("users.id_user"), nullable=False)
+    created_at = Column(TIMESTAMP, default=datetime.datetime.utcnow)
+    last_message_at = Column(TIMESTAMP, default=datetime.datetime.utcnow)
