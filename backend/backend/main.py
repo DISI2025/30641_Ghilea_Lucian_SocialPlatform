@@ -13,7 +13,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response
 from database import SessionLocal, engine
 from passwords import generate_random_password, hash_password
-from schemas import ResetPasswordRequest, PendingFriendRequest, FriendInfo
+from schemas import ResetPasswordRequest, PendingFriendRequest, FriendInfo, NewsFeedItemSchema
 from models import User, Friendships, FriendRequest, Foto, Base
 from typing import List
 from fastapi import HTTPException
@@ -275,6 +275,50 @@ def send_friend_request(id_sender: int, email_receiver: str, db: Session = Depen
     db.add(new_request)
     db.commit()
     return {"message": "Friend request sent", "request_id": new_id}
+
+@app.get("/newsFeed/{id_user}", response_model=List[NewsFeedItemSchema])
+def get_news_feed(id_user: int, db: Session = Depends(get_db)):
+    friendships = db.query(Friendships).filter(
+        or_(
+            Friendships.id_user1 == id_user,
+            Friendships.id_user2 == id_user
+        )
+    ).all()
+
+    if not friendships:
+        return []
+
+    friend_ids = set()
+    for f in friendships:
+        if f.id_user1 != id_user:
+            friend_ids.add(f.id_user1)
+        elif f.id_user2 != id_user:
+            friend_ids.add(f.id_user2)
+
+    posts = (
+        db.query(Foto, User)
+        .join(User, Foto.id_user == User.id_user)
+        .filter(
+            Foto.id_user.in_(friend_ids),
+            Foto.status != "inappropriate"
+        )
+        .order_by(Foto.created_at.desc())
+        .limit(50)
+        .all()
+    )
+    result = []
+    for foto, user in posts:
+        base64_image = base64.b64encode(foto.image_data).decode("utf-8")
+        result.append({
+            "nume": user.nume,
+            "prenume": user.prenume,
+            "caption": foto.caption,
+            "created_at": foto.created_at,
+            "image_base64": base64_image,
+            "id_poza_profil": user.id_poza_profil
+        })
+
+    return result
 @app.get("/")
 def read_root():
     return {"message": "Welcome to the Social Platform API"}

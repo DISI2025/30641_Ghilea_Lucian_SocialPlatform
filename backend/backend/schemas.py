@@ -97,6 +97,13 @@ class MessageResponse(BaseModel):
     text: str
     sent_at: datetime
 
+class NewsFeedItemSchema(BaseModel):
+    nume: str
+    prenume: str
+    caption: str
+    created_at: datetime
+    image_base64: str
+    id_poza_profil: Optional[int] = None
 
 model_config = {
         "from_attributes": True

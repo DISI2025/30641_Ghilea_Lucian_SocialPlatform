@@ -41,9 +41,15 @@ function Profile() {
     };
 
     const fetchFeed = async () => {
-      const response = await fetch(`http://127.0.0.1:8000/profile/${userId}/feed`);
-      const data = await response.json();
-      setFeed(data);
+      try {
+        const response = await fetch(`http://127.0.0.1:8000/newsFeed/${userId}`);
+        if (!response.ok) throw new Error('Failed to fetch feed');
+        const data = await response.json();
+        setFeed(data);
+      } catch (error) {
+        console.error('Error fetching feed:', error);
+        setFeed([]);
+      }
     };
 
     const fetchPhotos = async () => {
@@ -232,26 +238,59 @@ function Profile() {
         </div>
         
         {activeTab === 'feed' && (
-          <div className="feed-grid">
+          <div className="feed-container">
             {feed.length > 0 ? (
-              feed.map(post => (
-                <div key={post.id} className="post-thumbnail">
-                  <img 
-                    src={post.image || defaultPostImage} 
-                    alt={`Post by ${profile.name}`}
-                    onError={(e) => {
-                      e.target.src = defaultPostImage;
-                    }}
-                  />
-                  <div className="post-overlay">
-                    <span>❤️ {post.likes}</span>
-                    <span>💬 {post.comments}</span>
+              feed.map((item, index) => (
+                <div key={index} className="feed-post">
+                  <div className="post-header">
+                    <img 
+                      src={item.id_poza_profil ? `data:image/jpeg;base64,${item.id_poza_profil}` : defaultAvatar}
+                      alt={`${item.prenume} ${item.nume}`}
+                      className="post-avatar"
+                      onError={(e) => {
+                        e.target.src = defaultAvatar;
+                      }}
+                    />
+                    <div className="post-user-info">
+                      <h4>{item.prenume} {item.nume}</h4>
+                      <span className="post-time">
+                      {new Date(item.created_at).toLocaleDateString('ro-RO', {
+                        day: 'numeric',
+                        month: 'long',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
+                      </span>
+                    </div>
+                  </div>
+                  {item.caption && (
+                    <p className="post-caption">{item.caption}</p>
+                  )}
+                  <div className="post-image-container">
+                    <img 
+                      src={`data:image/jpeg;base64,${item.image_base64}`}
+                      alt={item.caption || 'Post image'}
+                      className="post-image"
+                      onClick={() => {
+                        setSelectedPhoto({
+                          image_base64: item.image_base64,
+                          caption: item.caption
+                        });
+                        setIsModalOpen(true);
+                      }}
+                    />
+                  </div>
+                  <div className="post-actions">
+                    <button className="like-btn">Like</button>
+                    <button className="comment-btn">Comment</button>
+                    <button className="share-btn">Share</button>
                   </div>
                 </div>
               ))
             ) : (
               <div className="no-feed">
-                <p>Not implemented yet</p>
+                <p>No posts to show. Follow more people to see their posts!</p>
               </div>
             )}
           </div>
