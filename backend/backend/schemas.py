@@ -113,6 +113,28 @@ class ConversationPreview(BaseModel):
     last_message: str
     last_message_at: datetime
 
+class MessageWithSenderInfo(BaseModel):
+    id: int
+    id_conversation: int
+    id_sender: int
+    id_receiver: int
+    text: str
+    sent_at: datetime
+    sender_nume: str
+    sender_prenume: str
+
+class MessageWithSenderReceiverInfo(BaseModel):
+    id: int
+    id_conversation: int
+    id_sender: int
+    id_receiver: int
+    text: str
+    sent_at: datetime
+    sender_nume: str
+    sender_prenume: str
+    receiver_nume: str
+    receiver_prenume: str
+
 model_config = {
         "from_attributes": True
     }
