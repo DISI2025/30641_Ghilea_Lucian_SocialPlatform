@@ -84,6 +84,20 @@ class FotoInAlbum(BaseModel):
     added_at: datetime
     image_base64: str
 
+class SendMessageRequest(BaseModel):
+    id_conversation: Optional[int] = None
+    id_receiver: Optional[int] = None
+    text: str
+
+class MessageResponse(BaseModel):
+    id: int
+    id_conversation: int
+    id_sender: int
+    id_receiver: int
+    text: str
+    sent_at: datetime
+
+
 model_config = {
         "from_attributes": True
     }
