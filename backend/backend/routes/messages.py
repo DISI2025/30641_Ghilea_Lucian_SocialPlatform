@@ -5,6 +5,9 @@ from database import SessionLocal
 from datetime import datetime
 from schemas import SendMessageRequest, MessageResponse
 from redis_store import get_user_id_by_token
+from schemas import MessageWithSenderReceiverInfo
+from typing import List
+from sqlalchemy.orm import aliased
 
 router = APIRouter()
 
@@ -78,3 +81,30 @@ def send_message(data: SendMessageRequest, db: Session = Depends(get_db), user_i
     db.refresh(new_message)
 
     return new_message
+
+@router.get("/messages/{conversation_id}", response_model=List[MessageWithSenderReceiverInfo])
+def get_messages(conversation_id: int, db: Session = Depends(get_db)):
+    sender = aliased(User)
+    receiver = aliased(User)
+
+    messages = (
+        db.query(
+            Message.id,
+            Message.id_conversation,
+            Message.id_sender,
+            Message.id_receiver,
+            Message.text,
+            Message.sent_at,
+            sender.nume.label("sender_nume"),
+            sender.prenume.label("sender_prenume"),
+            receiver.nume.label("receiver_nume"),
+            receiver.prenume.label("receiver_prenume")
+        )
+        .join(sender, Message.id_sender == sender.id_user)
+        .join(receiver, Message.id_receiver == receiver.id_user)
+        .filter(Message.id_conversation == conversation_id)
+        .order_by(Message.sent_at)
+        .all()
+    )
+
+    return [dict(msg._mapping) for msg in messages]
