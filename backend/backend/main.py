@@ -14,7 +14,7 @@ from fastapi.responses import Response
 from database import SessionLocal, engine
 from passwords import generate_random_password, hash_password
 from schemas import ResetPasswordRequest, PendingFriendRequest, FriendInfo, NewsFeedItemSchema, ConversationPreview
-from models import User, Friendships, FriendRequest, Foto, Base
+from models import User, Friendships, FriendRequest, Foto, Base, Conversation, Message
 from typing import List
 from fastapi import HTTPException
 import datetime
@@ -274,7 +274,7 @@ def send_friend_request(id_sender: int, email_receiver: str, db: Session = Depen
     )
     db.add(new_request)
     db.commit()
-    return {"message": "Friend request sent", "request_id": new_id}
+    return {"message": "Cererea de prietenie trimisa:", "request_id": new_id}
 
 @app.get("/newsFeed/{id_user}", response_model=List[NewsFeedItemSchema])
 def get_news_feed(id_user: int, db: Session = Depends(get_db)):
@@ -310,8 +310,10 @@ def get_news_feed(id_user: int, db: Session = Depends(get_db)):
     for foto, user in posts:
         base64_image = base64.b64encode(foto.image_data).decode("utf-8")
         result.append({
+            "id": user.id_user,
             "nume": user.nume,
             "prenume": user.prenume,
+            "id_foto": foto.id,
             "caption": foto.caption,
             "created_at": foto.created_at,
             "image_base64": base64_image,
@@ -337,9 +339,9 @@ def get_all_conversations(id_user: int, db: Session = Depends(get_db)):
 
         if not other_user:
             continue
-        last_message = db.query(Messages).filter(
-            Messages.id_conversation == conv.id
-        ).order_by(Messages.sent_at.desc()).first()
+        last_message = db.query(Message).filter(
+            Message.id_conversation == conv.id
+        ).order_by(Message.sent_at.desc()).first()
 
         if not last_message:
             continue
@@ -361,6 +363,21 @@ def get_all_conversations(id_user: int, db: Session = Depends(get_db)):
         })
 
     return results
+
+@app.post("/markInappropriate/{id_poza}/{id_utilizator}")
+def mark_photo_inappropriate(id_poza: int, id_utilizator: int, db: Session = Depends(get_db)):
+    photo = db.query(Foto).filter(Foto.id == id_poza).first()
+
+    if not photo:
+        raise HTTPException(status_code=404, detail="Fotografia nu exista")
+
+    if photo.id_user != id_utilizator:
+        raise HTTPException(status_code=403, detail="Fotografia nu apartine acestui utilizator")
+
+    photo.status = "inappropriate"
+    db.commit()
+
+    return {"message": "Fotografia a fost blocata"}
 @app.get("/")
 def read_root():
     return {"message": "Welcome to the Social Platform API"}
