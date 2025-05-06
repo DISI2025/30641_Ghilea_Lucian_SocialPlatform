@@ -394,6 +394,19 @@ def delete_photo(user_id: int, foto_id: int, db: Session = Depends(get_db)):
     db.delete(photo)
     db.commit()
     return {"message": "Fotografia a fost ștearsa"}
+
+@app.put("/deleteByModerator/{foto_id}")
+def delete_photo_by_moderator(foto_id: int, db: Session = Depends(get_db)):
+    photo = db.query(Foto).filter(Foto.id == foto_id).first()
+    if not photo:
+        raise HTTPException(status_code=404, detail="Fotografia nu a fost gasita")
+
+    db.query(AlbumPhoto).filter(AlbumPhoto.id_foto == foto_id).delete()
+    db.delete(photo)
+    db.commit()
+
+    return {"message": "Moderatorul a sters imaginea"}
+
 @app.get("/")
 def read_root():
     return {"message": "Welcome to the Social Platform API"}
