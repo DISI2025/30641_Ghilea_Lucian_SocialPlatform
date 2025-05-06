@@ -14,7 +14,7 @@ from fastapi.responses import Response
 from database import SessionLocal, engine
 from passwords import generate_random_password, hash_password
 from schemas import ResetPasswordRequest, PendingFriendRequest, FriendInfo, NewsFeedItemSchema, ConversationPreview
-from models import User, Friendships, FriendRequest, Foto, Base, Conversation, Message
+from models import User, Friendships, FriendRequest, Foto, Base, Conversation, Message, AlbumPhoto
 from typing import List
 from fastapi import HTTPException
 import datetime
@@ -378,6 +378,22 @@ def mark_photo_inappropriate(id_poza: int, id_utilizator: int, db: Session = Dep
     db.commit()
 
     return {"message": "Fotografia a fost blocata"}
+
+@app.put("/deleteFoto/{user_id}/{foto_id}")
+def delete_photo(user_id: int, foto_id: int, db: Session = Depends(get_db)):
+    photo = db.query(Foto).filter(Foto.id == foto_id).first()
+
+    if not photo:
+        raise HTTPException(status_code=404, detail="Fotografia nu a fost gasita")
+
+    if photo.id_user != user_id:
+        raise HTTPException(status_code=403, detail="Nu apartine fotografia contului selectat")
+
+    db.query(AlbumPhoto).filter(AlbumPhoto.id_foto == foto_id).delete()
+
+    db.delete(photo)
+    db.commit()
+    return {"message": "Fotografia a fost ștearsa"}
 @app.get("/")
 def read_root():
     return {"message": "Welcome to the Social Platform API"}
