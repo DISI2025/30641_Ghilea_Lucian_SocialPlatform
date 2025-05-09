@@ -86,6 +86,7 @@ class FotoInAlbum(BaseModel):
 
 class SendMessageRequest(BaseModel):
     id_conversation: Optional[int] = None
+    id_sender: int
     id_receiver: Optional[int] = None
     text: str
 
@@ -106,6 +107,7 @@ class NewsFeedItemSchema(BaseModel):
     id_poza_profil: Optional[int] = None
 
 class ConversationPreview(BaseModel):
+    id_conversation: int
     nume: str
     prenume: str
     id_poza_profil: Optional[int]
