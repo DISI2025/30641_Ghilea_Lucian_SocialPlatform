@@ -15,6 +15,7 @@ from database import SessionLocal, engine
 from passwords import generate_random_password, hash_password
 from schemas import ResetPasswordRequest, PendingFriendRequest, FriendInfo, NewsFeedItemSchema, ConversationPreview
 from models import User, Friendships, FriendRequest, Foto, Base, Message, Conversation
+from models import User, Friendships, FriendRequest, Foto, Base, Conversation, Message, AlbumPhoto
 from typing import List
 from fastapi import HTTPException
 import datetime
@@ -274,7 +275,7 @@ def send_friend_request(id_sender: int, email_receiver: str, db: Session = Depen
     )
     db.add(new_request)
     db.commit()
-    return {"message": "Friend request sent", "request_id": new_id}
+    return {"message": "Cererea de prietenie trimisa:", "request_id": new_id}
 
 @app.get("/newsFeed/{id_user}", response_model=List[NewsFeedItemSchema])
 def get_news_feed(id_user: int, db: Session = Depends(get_db)):
@@ -310,8 +311,10 @@ def get_news_feed(id_user: int, db: Session = Depends(get_db)):
     for foto, user in posts:
         base64_image = base64.b64encode(foto.image_data).decode("utf-8")
         result.append({
+            "id": user.id_user,
             "nume": user.nume,
             "prenume": user.prenume,
+            "id_foto": foto.id,
             "caption": foto.caption,
             "created_at": foto.created_at,
             "image_base64": base64_image,
@@ -362,6 +365,50 @@ def get_all_conversations(id_user: int, db: Session = Depends(get_db)):
         })
 
     return results
+
+@app.post("/markInappropriate/{id_poza}/{id_utilizator}")
+def mark_photo_inappropriate(id_poza: int, id_utilizator: int, db: Session = Depends(get_db)):
+    photo = db.query(Foto).filter(Foto.id == id_poza).first()
+
+    if not photo:
+        raise HTTPException(status_code=404, detail="Fotografia nu exista")
+
+    if photo.id_user != id_utilizator:
+        raise HTTPException(status_code=403, detail="Fotografia nu apartine acestui utilizator")
+
+    photo.status = "inappropriate"
+    db.commit()
+
+    return {"message": "Fotografia a fost blocata"}
+
+@app.put("/deleteFoto/{user_id}/{foto_id}")
+def delete_photo(user_id: int, foto_id: int, db: Session = Depends(get_db)):
+    photo = db.query(Foto).filter(Foto.id == foto_id).first()
+
+    if not photo:
+        raise HTTPException(status_code=404, detail="Fotografia nu a fost gasita")
+
+    if photo.id_user != user_id:
+        raise HTTPException(status_code=403, detail="Nu apartine fotografia contului selectat")
+
+    db.query(AlbumPhoto).filter(AlbumPhoto.id_foto == foto_id).delete()
+
+    db.delete(photo)
+    db.commit()
+    return {"message": "Fotografia a fost ștearsa"}
+
+@app.put("/deleteByModerator/{foto_id}")
+def delete_photo_by_moderator(foto_id: int, db: Session = Depends(get_db)):
+    photo = db.query(Foto).filter(Foto.id == foto_id).first()
+    if not photo:
+        raise HTTPException(status_code=404, detail="Fotografia nu a fost gasita")
+
+    db.query(AlbumPhoto).filter(AlbumPhoto.id_foto == foto_id).delete()
+    db.delete(photo)
+    db.commit()
+
+    return {"message": "Moderatorul a sters imaginea"}
+
 @app.get("/")
 def read_root():
     return {"message": "Welcome to the Social Platform API"}
