@@ -14,6 +14,7 @@ from fastapi.responses import Response
 from database import SessionLocal, engine
 from passwords import generate_random_password, hash_password
 from schemas import ResetPasswordRequest, PendingFriendRequest, FriendInfo, NewsFeedItemSchema, ConversationPreview
+from models import User, Friendships, FriendRequest, Foto, Base, Message, Conversation
 from models import User, Friendships, FriendRequest, Foto, Base, Conversation, Message, AlbumPhoto
 from typing import List
 from fastapi import HTTPException
@@ -35,9 +36,9 @@ app.add_middleware(
 )
 
 
-app.include_router(users.router, prefix="/api")
-app.include_router(albums.router, prefix="/api")
-app.include_router(messages.router, prefix="/api")
+app.include_router(users.router, prefix="")
+app.include_router(albums.router, prefix="")
+app.include_router(messages.router, prefix="")
 
 def get_db():
     db = SessionLocal()
@@ -356,6 +357,7 @@ def get_all_conversations(id_user: int, db: Session = Depends(get_db)):
         results.append({
             "nume": other_user.nume,
             "prenume": other_user.prenume,
+            "id_conversation": conv.id,
             "id_poza_profil": other_user.id_poza_profil,
             "poza_profil_base64": profile_photo_base64,
             "last_message": last_message.text,

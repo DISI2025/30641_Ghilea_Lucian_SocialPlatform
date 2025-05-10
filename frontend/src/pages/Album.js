@@ -6,7 +6,7 @@ function Album() {
   const { userId, albumId } = useParams();
   const [photos, setPhotos] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState(null);  
   const [userPhotos, setUserPhotos] = useState([]);
   const [selectedPhotos, setSelectedPhotos] = useState([]);
   const [showPhotoSelector, setShowPhotoSelector] = useState(false);

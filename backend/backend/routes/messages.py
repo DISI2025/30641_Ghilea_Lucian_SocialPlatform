@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Header
 from sqlalchemy.orm import Session
 from models import Message, Conversation, User
 from database import SessionLocal
-from datetime import datetime
+import datetime
 from schemas import SendMessageRequest, MessageResponse
 from redis_store import get_user_id_by_token
 from schemas import MessageWithSenderReceiverInfo
@@ -26,11 +26,11 @@ def get_current_user(Authorization: str = Header(...)) -> int:
     return user_id
 
 @router.post("/messages/send", response_model=MessageResponse, status_code=201)
-def send_message(data: SendMessageRequest, db: Session = Depends(get_db), user_id: int = Depends(get_current_user)):
-    now = datetime.utcnow()
+def send_message(data: SendMessageRequest, db: Session = Depends(get_db)):
+    now = datetime.datetime.now()
 
-    # Convertim id_receiver dacă este furnizat
     receiver_id = data.id_receiver
+    user_id = data.id_sender
     if receiver_id is not None:
         try:
             receiver_id = int(receiver_id)
