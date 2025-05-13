@@ -300,8 +300,7 @@ def get_news_feed(id_user: int, db: Session = Depends(get_db)):
         db.query(Foto, User)
         .join(User, Foto.id_user == User.id_user)
         .filter(
-            Foto.id_user.in_(friend_ids),
-            Foto.status != "inappropriate"
+            Foto.id_user.in_(friend_ids)
         )
         .order_by(Foto.created_at.desc())
         .limit(50)
@@ -318,7 +317,8 @@ def get_news_feed(id_user: int, db: Session = Depends(get_db)):
             "caption": foto.caption,
             "created_at": foto.created_at,
             "image_base64": base64_image,
-            "id_poza_profil": user.id_poza_profil
+            "id_poza_profil": user.id_poza_profil,
+            "moderator": user.moderator
         })
 
     return result
