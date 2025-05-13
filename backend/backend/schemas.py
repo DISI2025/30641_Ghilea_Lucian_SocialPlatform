@@ -105,6 +105,7 @@ class NewsFeedItemSchema(BaseModel):
     created_at: datetime
     image_base64: str
     id_poza_profil: Optional[int] = None
+    status: str
 
 class ConversationPreview(BaseModel):
     id_conversation: int
