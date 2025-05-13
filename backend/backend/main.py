@@ -458,6 +458,22 @@ def get_not_validated_accounts(db: Session = Depends(get_db)):
 
     return result
 
+@app.get("/users/id_moderator/{id_moderator}/{searchstring}", response_model=List[FriendInfo])
+def search_users_as_moderator(id_moderator: int, searchstring: str, db: Session = Depends(get_db)):
+    moderator = db.query(User).filter(User.id_user == id_moderator).first()
+    if not moderator or not moderator.moderator:
+        raise HTTPException(status_code=403, detail="Acces interzis. Nu ești moderator.")
+
+    results = db.query(User).filter(
+        or_(
+            User.nume.ilike(f"%{searchstring}%"),
+            User.prenume.ilike(f"%{searchstring}%"),
+            User.email.ilike(f"%{searchstring}%")
+        )
+    ).limit(5).all()
+
+    return results
+
 @app.get("/")
 def read_root():
     return {"message": "Welcome to the Social Platform API"}
