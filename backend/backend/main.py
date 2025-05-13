@@ -318,7 +318,7 @@ def get_news_feed(id_user: int, db: Session = Depends(get_db)):
             "created_at": foto.created_at,
             "image_base64": base64_image,
             "id_poza_profil": user.id_poza_profil,
-            "moderator": user.moderator
+            "status": foto.status
         })
 
     return result
