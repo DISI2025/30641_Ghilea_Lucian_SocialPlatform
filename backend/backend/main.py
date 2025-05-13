@@ -477,9 +477,27 @@ def search_users_as_moderator(id_moderator: int, searchstring: str, db: Session 
 
     return results
 
+def sync_users_to_neo4j(db: Session):
+    users = db.query(User).all()
+    friendships = db.query(Friendships).all()
+
+    with driver.session() as session:
+        for user in users:
+            session.run("""
+                MERGE (u:User {id_user: $id_user})
+                SET u.nume = $nume, u.prenume = $prenume, u.email = $email
+            """, id_user=user.id_user, nume=user.nume, prenume=user.prenume, email=user.email)
+
+        for f in friendships:
+            session.run("""
+                MATCH (u1:User {id_user: $id1}), (u2:User {id_user: $id2})
+                MERGE (u1)-[:FRIENDS_WITH]->(u2)
+                MERGE (u2)-[:FRIENDS_WITH]->(u1)
+            """, id1=f.id_user1,id2=f.id_user2)
+
 @app.get("/suggest_friends/{id_user}", response_model=List[UserProfileNeo4j])
 def suggest_friends(id_user: int, db: Session = Depends(get_db)):
-   #todo - sincronizare cu ce avem in baza de date
+    sync_users_to_neo4j(db)
     with driver.session() as session:
         result = session.run(
             """
