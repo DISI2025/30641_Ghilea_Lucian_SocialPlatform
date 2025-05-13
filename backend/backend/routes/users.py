@@ -7,6 +7,7 @@ from passwords import verify_password, hash_password
 from redis_store import create_session, delete_session, get_user_id_by_token
 from models import User, AlbumPhoto, Foto, Album, Friendships, FriendRequest, Message, Conversation
 import uuid
+from fastapi import Body
 
 router = APIRouter()
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -108,7 +109,7 @@ def validate_user(user_id: int, moderator_id: int, db: Session = Depends(get_db)
     return {"message": f"Contul utilizatorului cu ID {user_id} a fost validat"}
 
 @router.delete("/delete-user/{user_id}")
-def delete_user(user_id: int, moderator_id: int, db: Session = Depends(get_db)):
+def delete_user(user_id: int, moderator_id: int = Body(..., embed=True), db: Session = Depends(get_db)):
     moderator = db.query(User).filter(User.id_user == moderator_id).first()
     if not moderator or not moderator.moderator:
         raise HTTPException(status_code=403, detail="Doar moderatorii pot șterge conturi")
