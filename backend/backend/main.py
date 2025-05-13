@@ -323,6 +323,32 @@ def get_news_feed(id_user: int, db: Session = Depends(get_db)):
 
     return result
 
+@app.get("/allposts", response_model=List[NewsFeedItemSchema])
+def get_all_posts(db: Session = Depends(get_db)):
+    posts = (
+        db.query(Foto, User)
+        .join(User, Foto.id_user == User.id_user)
+        .order_by(Foto.created_at.desc())
+        .limit(50)
+        .all()
+    )
+    result = []
+    for foto, user in posts:
+        base64_image = base64.b64encode(foto.image_data).decode("utf-8")
+        result.append({
+            "id": user.id_user,
+            "nume": user.nume,
+            "prenume": user.prenume,
+            "id_foto": foto.id,
+            "caption": foto.caption,
+            "created_at": foto.created_at,
+            "image_base64": base64_image,
+            "id_poza_profil": user.id_poza_profil,
+            "status": foto.status
+        })
+
+    return result
+
 @app.get("/allCurrentConversations/{id_user}", response_model=List[ConversationPreview])
 def get_all_conversations(id_user: int, db: Session = Depends(get_db)):
     conversations = db.query(Conversation).filter(
@@ -408,6 +434,29 @@ def delete_photo_by_moderator(foto_id: int, db: Session = Depends(get_db)):
     db.commit()
 
     return {"message": "Moderatorul a sters imaginea"}
+
+@app.get("/notValidatedAccounts")
+def get_not_validated_accounts(db: Session = Depends(get_db)):
+    users = db.query(User).filter(User.is_validated == False).all()
+
+    result = []
+    for user in users:
+        base64_profile_pic = None
+        if user.id_poza_profil:
+            profile_pic = db.query(Foto).filter(Foto.id == user.id_poza_profil).first()
+            if profile_pic and profile_pic.image_data:
+                base64_profile_pic = base64.b64encode(profile_pic.image_data).decode("utf-8")
+
+        result.append({
+            "id_user": user.id_user,
+            "nume": user.nume,
+            "prenume": user.prenume,
+            "email": user.email,
+            "poza_profil_base64": base64_profile_pic,
+            "get_profile_url": f"/profile/{user.id_user}"
+        })
+
+    return result
 
 @app.get("/")
 def read_root():
