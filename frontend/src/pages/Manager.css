@@ -1,0 +1,387 @@
+/* Admin Dashboard Specific Styles */
+.profile-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #f5f5f5;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.profile-header {
+  text-align: center;
+  margin-bottom: 30px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.profile-header h1 {
+  font-size: 2.5rem;
+  margin-bottom: 10px;
+  color: #333;
+}
+
+.profile-header .username {
+  color: #666;
+  font-size: 1.2rem;
+  margin-bottom: 20px;
+}
+
+.profile-content {
+  background-color: white;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.profile-nav {
+  display: flex;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.profile-nav button {
+  padding: 10px 20px;
+  margin-right: 10px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 1rem;
+  color: #666;
+  border-bottom: 2px solid transparent;
+  transition: all 0.3s ease;
+}
+
+.profile-nav button:hover {
+  color: #333;
+}
+
+.profile-nav button.active {
+  color: #1877f2;
+  border-bottom: 2px solid #1877f2;
+  font-weight: 600;
+}
+
+/* Posts Tab Styles */
+.feed-container {
+  margin-top: 20px;
+}
+
+.feed-post {
+  background: white;
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e0e0e0;
+}
+
+.post-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.post-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  margin-right: 10px;
+  object-fit: cover;
+}
+
+.post-user-info h4 {
+  margin: 0;
+  font-size: 1rem;
+  color: #333;
+}
+
+.post-time {
+  font-size: 0.8rem;
+  color: #666;
+}
+
+.post-caption {
+  margin-bottom: 15px;
+  color: #333;
+  line-height: 1.4;
+}
+
+.post-image-container {
+  margin-bottom: 15px;
+  position: relative;
+}
+
+.post-image {
+  max-width: 100%;
+  max-height: 500px;
+  border-radius: 8px;
+  display: block;
+  margin: 0 auto;
+  cursor: pointer;
+}
+
+.blocked-content-wrapper {
+  position: relative;
+}
+
+.blocked-content-message {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  color: #ff0000;
+  font-weight: bold;
+  background-color: rgba(255, 255, 255, 0.8);
+  padding: 10px 20px;
+  border-radius: 5px;
+  z-index: 1;
+}
+
+.blurred-image {
+  filter: blur(15px);
+  width: 100%;
+  border-radius: 8px;
+}
+
+.post-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.block-btn, .delete-btn, .validate-btn, .reject-btn {
+  padding: 8px 15px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background-color 0.3s;
+}
+
+.block-btn {
+  background-color: #ff9800;
+  color: white;
+}
+
+.block-btn:hover {
+  background-color: #f57c00;
+}
+
+.delete-btn {
+  background-color: #f44336;
+  color: white;
+}
+
+.delete-btn:hover {
+  background-color: #d32f2f;
+}
+
+.validate-btn {
+  background-color: #4caf50;
+  color: white;
+}
+
+.validate-btn:hover {
+  background-color: #388e3c;
+}
+
+.reject-btn {
+  background-color: #f44336;
+  color: white;
+}
+
+.reject-btn:hover {
+  background-color: #d32f2f;
+}
+
+/* Accounts Tab Styles */
+.accounts-container {
+  margin-top: 20px;
+}
+
+.accounts-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.account-card {
+  background: white;
+  border-radius: 8px;
+  padding: 15px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e0e0e0;
+  display: flex;
+  flex-direction: column;
+}
+
+.account-info {
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.account-avatar {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  margin-right: 15px;
+  object-fit: cover;
+}
+
+.account-details h3 {
+  margin: 0 0 5px 0;
+  font-size: 1.1rem;
+  color: #333;
+}
+
+.account-details p {
+  margin: 0;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.view-profile-btn {
+  margin-top: 10px;
+  padding: 5px 10px;
+  background-color: #1877f2;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background-color 0.3s;
+}
+
+.view-profile-btn:hover {
+  background-color: #166fe5;
+}
+
+.account-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: auto;
+}
+
+/* Not Implemented Section */
+.not-implemented {
+  text-align: center;
+  padding: 50px 20px;
+  color: #666;
+}
+
+.not-implemented h2 {
+  font-size: 1.8rem;
+  margin-bottom: 15px;
+}
+
+.not-implemented p {
+  font-size: 1.1rem;
+}
+
+/* Loading and Error States */
+.loading, .error, .no-feed, .no-accounts, .no-photos, .no-albums {
+  text-align: center;
+  padding: 40px 20px;
+  font-size: 1.2rem;
+  color: #666;
+}
+
+/* Modal Styles */
+.photo-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  max-width: 90%;
+  max-height: 90%;
+  overflow: auto;
+  position: relative;
+}
+
+.close-modal {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #666;
+}
+
+.enlarged-photo {
+  max-width: 100%;
+  max-height: 80vh;
+  display: block;
+  margin: 0 auto;
+}
+
+.photo-caption {
+  margin-top: 15px;
+  padding: 10px;
+  background: #f5f5f5;
+  border-radius: 5px;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .profile-nav {
+    flex-direction: column;
+  }
+  
+  .profile-nav button {
+    margin-right: 0;
+    margin-bottom: 5px;
+    text-align: left;
+  }
+  
+  .accounts-list {
+    grid-template-columns: 1fr;
+  }
+  
+  .post-actions {
+    flex-direction: column;
+  }
+  
+  .account-actions {
+    flex-direction: column;
+  }
+}
+
+/* Adaugă aceste stiluri în Profile.css */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 300px;
+}
+
+.loading-spinner {
+  border: 5px solid #f3f3f3;
+  border-top: 5px solid #1877f2;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  animation: spin 1s linear infinite;
+  margin-bottom: 20px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
