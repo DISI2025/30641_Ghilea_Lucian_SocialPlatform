@@ -13,7 +13,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response
 from database import SessionLocal, engine
 from passwords import generate_random_password, hash_password
-from schemas import ResetPasswordRequest, PendingFriendRequest, FriendInfo, NewsFeedItemSchema, ConversationPreview
+from schemas import ResetPasswordRequest, PendingFriendRequest, FriendInfo, NewsFeedItemSchema, ConversationPreview, UserProfileNeo4j
 from models import User, Friendships, FriendRequest, Foto, Base, Message, Conversation
 from models import User, Friendships, FriendRequest, Foto, Base, Conversation, Message, AlbumPhoto
 from typing import List
@@ -23,6 +23,7 @@ from routes import users, albums
 from redis_config import redis_client
 from cache_store import get_cached_profile, set_cached_profile
 from routes import messages
+from neo4j import GraphDatabase
 
 models.Base.metadata.create_all(bind=engine)
 app = FastAPI()
@@ -39,6 +40,8 @@ app.add_middleware(
 app.include_router(users.router, prefix="")
 app.include_router(albums.router, prefix="")
 app.include_router(messages.router, prefix="")
+
+driver = GraphDatabase.driver("bolt://localhost:7687", auth=("neo4j", "test"))
 
 def get_db():
     db = SessionLocal()
@@ -473,6 +476,43 @@ def search_users_as_moderator(id_moderator: int, searchstring: str, db: Session 
     ).limit(5).all()
 
     return results
+
+@app.get("/suggest_friends/{id_user}", response_model=List[UserProfileNeo4j])
+def suggest_friends(id_user: int, db: Session = Depends(get_db)):
+   #todo - sincronizare cu ce avem in baza de date
+    with driver.session() as session:
+        result = session.run(
+            """
+            MATCH (u:User {id_user: $id_user})-[:FRIENDS_WITH]->(:User)-[:FRIENDS_WITH]->(fof:User)
+            WHERE NOT (u)-[:FRIENDS_WITH]->(fof) AND u <> fof
+            RETURN DISTINCT fof.id_user AS id_user
+            LIMIT 10
+            """,
+            id_user=id_user
+        )
+        suggested_ids = [record["id_user"] for record in result]
+    users = (
+        db.query(User, Foto)
+        .outerjoin(Foto, User.id_poza_profil == Foto.id)
+        .filter(User.id_user.in_(suggested_ids))
+        .all()
+    )
+    response = []
+    for user, foto in users:
+        if foto and foto.image_data:
+            image_base64 = base64.b64encode(foto.image_data).decode("utf-8")
+        else:
+            image_base64 = ""
+        response.append(UserProfileNeo4j(
+            id_user=user.id_user,
+            nume=user.nume,
+            prenume=user.prenume,
+            email=user.email,
+            image_base64=image_base64
+        ))
+    return response
+
+
 
 @app.get("/")
 def read_root():

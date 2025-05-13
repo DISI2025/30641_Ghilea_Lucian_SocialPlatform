@@ -138,6 +138,12 @@ class MessageWithSenderReceiverInfo(BaseModel):
     receiver_nume: str
     receiver_prenume: str
 
+class UserProfileNeo4j(BaseModel):
+    id_user: int
+    nume: Optional[str] = None
+    prenume: Optional[str] = None
+    image_base64: str
+    email: Optional[str]
 model_config = {
         "from_attributes": True
     }
