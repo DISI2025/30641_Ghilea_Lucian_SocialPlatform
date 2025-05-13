@@ -26,7 +26,7 @@ function App() {
         <Route path="/create-post/:userId" element={<CreatePost />} />
         <Route path="/edit-profile/:userId" element={<ProfileUpdate />} /> 
         <Route path=":userId/album/:albumId" element={<Album />} /> 
-        <Route path="/moderator/:id" element={<ModeratorPage />} />
+        <Route path="/moderator/:userId" element={<ModeratorPage />} />
 
       </Routes>
     </Router>
