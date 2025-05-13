@@ -1,4 +1,3 @@
-# Task #95 - Verificare: token-ul generat este stocat în Redis și asociat cu user_id
 from fastapi import APIRouter, HTTPException, Depends, Header
 from sqlalchemy.orm import Session
 from passlib.context import CryptContext
@@ -151,3 +150,30 @@ def delete_user(user_id: int, moderator_id: int, db: Session = Depends(get_db)):
     db.commit()
 
     return {"message": f"Contul utilizatorului cu ID {user_id} a fost șters."}
+
+
+@router.delete("/delete-own-account")
+def delete_own_account(Authorization: str = Header(...), db: Session = Depends(get_db)):
+    token = Authorization.replace("Bearer ", "")
+    user_id = get_user_id_by_token(token)
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Token invalid sau expirat")
+
+    # Ștergere date asociate
+    db.query(Message).filter((Message.id_sender == user_id) | (Message.id_receiver == user_id)).delete()
+    db.query(Conversation).filter((Conversation.id_user1 == user_id) | (Conversation.id_user2 == user_id)).delete()
+    db.query(AlbumPhoto).filter(AlbumPhoto.id_foto.in_(
+        db.query(Foto.id).filter(Foto.id_user == user_id)
+    )).delete()
+    db.query(Foto).filter(Foto.id_user == user_id).delete()
+    db.query(FriendRequest).filter((FriendRequest.id_sender == user_id) | (FriendRequest.id_receiver == user_id)).delete()
+    db.query(Friendships).filter((Friendships.id_user1 == user_id) | (Friendships.id_user2 == user_id)).delete()
+
+    # Ștergere cont
+    db.query(User).filter(User.id_user == user_id).delete()
+    db.commit()
+
+    # Invalidare sesiune
+    delete_session(token)
+
+    return {"message": "Contul a fost sters cu succes"}
