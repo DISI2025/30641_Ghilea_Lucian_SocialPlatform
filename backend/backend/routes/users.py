@@ -3,10 +3,10 @@ from fastapi import APIRouter, HTTPException, Depends, Header
 from sqlalchemy.orm import Session
 from passlib.context import CryptContext
 from database import SessionLocal
-from models import User, AlbumPhoto, Foto, Album
 from schemas import UserCreate, UserLogin, AddPhotosToAlbum
 from passwords import verify_password, hash_password
 from redis_store import create_session, delete_session, get_user_id_by_token
+from models import User, AlbumPhoto, Foto, Album, Friendships, FriendRequest, Message, Conversation
 import uuid
 
 router = APIRouter()
@@ -107,3 +107,47 @@ def validate_user(user_id: int, moderator_id: int, db: Session = Depends(get_db)
     user.is_validated = True
     db.commit()
     return {"message": f"Contul utilizatorului cu ID {user_id} a fost validat"}
+
+@router.delete("/delete-user/{user_id}")
+def delete_user(user_id: int, moderator_id: int, db: Session = Depends(get_db)):
+    moderator = db.query(User).filter(User.id_user == moderator_id).first()
+    if not moderator or not moderator.moderator:
+        raise HTTPException(status_code=403, detail="Doar moderatorii pot șterge conturi")
+
+    user = db.query(User).filter(User.id_user == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="Utilizatorul nu există")
+
+    # Șterge relațiile din album_photos
+    db.query(AlbumPhoto).filter(AlbumPhoto.id_foto.in_(
+        db.query(Foto.id).filter(Foto.id_user == user_id)
+    )).delete(synchronize_session=False)
+
+    # Șterge fotografiile utilizatorului
+    db.query(Foto).filter(Foto.id_user == user_id).delete(synchronize_session=False)
+
+    # Șterge cereri de prietenie trimise și primite
+    db.query(FriendRequest).filter(
+        (FriendRequest.id_sender == user_id) | (FriendRequest.id_receiver == user_id)
+    ).delete(synchronize_session=False)
+
+    # Șterge prieteniile în care este implicat
+    db.query(Friendships).filter(
+        (Friendships.id_user1 == user_id) | (Friendships.id_user2 == user_id)
+    ).delete(synchronize_session=False)
+
+    # Șterge mesajele trimise sau primite
+    db.query(Message).filter(
+        (Message.id_sender == user_id) | (Message.id_receiver == user_id)
+    ).delete(synchronize_session=False)
+
+    # Șterge conversațiile în care este implicat
+    db.query(Conversation).filter(
+        (Conversation.id_user1 == user_id) | (Conversation.id_user2 == user_id)
+    ).delete(synchronize_session=False)
+
+    # Șterge contul utilizatorului
+    db.delete(user)
+    db.commit()
+
+    return {"message": f"Contul utilizatorului cu ID {user_id} a fost șters."}
