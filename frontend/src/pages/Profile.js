@@ -238,63 +238,85 @@ function Profile() {
         </div>
         
         {activeTab === 'feed' && (
-          <div className="feed-container">
-            {feed.length > 0 ? (
-              feed.map((item, index) => (
-                <div key={index} className="feed-post">
-                  <div className="post-header">
-                    <img 
-                      src={item.id_poza_profil ? `data:image/jpeg;base64,${item.id_poza_profil}` : defaultAvatar}
-                      alt={`${item.prenume} ${item.nume}`}
-                      className="post-avatar"
-                      onError={(e) => {
-                        e.target.src = defaultAvatar;
-                      }}
-                    />
-                    <div className="post-user-info">
-                      <h4>{item.prenume} {item.nume}</h4>
-                      <span className="post-time">
-                      {new Date(item.created_at).toLocaleDateString('ro-RO', {
-                        day: 'numeric',
-                        month: 'long',
-                        year: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      })}
-                      </span>
-                    </div>
-                  </div>
-                  {item.caption && (
-                    <p className="post-caption">{item.caption}</p>
-                  )}
-                  <div className="post-image-container">
-                    <img 
-                      src={`data:image/jpeg;base64,${item.image_base64}`}
-                      alt={item.caption || 'Post image'}
-                      className="post-image"
-                      onClick={() => {
-                        setSelectedPhoto({
-                          image_base64: item.image_base64,
-                          caption: item.caption
-                        });
-                        setIsModalOpen(true);
-                      }}
-                    />
-                  </div>
-                  <div className="post-actions">
-                    <button className="like-btn">Like</button>
-                    <button className="comment-btn">Comment</button>
-                    <button className="share-btn">Share</button>
+  <div className="feed-container">
+    {feed.length > 0 ? (
+      feed.map((item, index) => {
+        // Debug: verifică conținutul item-ului
+        console.log('Post item:', item);
+        
+        return (
+          <div key={index} className="feed-post">
+            <div className="post-header">
+              <img 
+                src={item.id_poza_profil ? `data:image/jpeg;base64,${item.id_poza_profil}` : defaultAvatar}
+                alt={`${item.prenume} ${item.nume}`}
+                className="post-avatar"
+                onError={(e) => {
+                  e.target.src = defaultAvatar;
+                }}
+              />
+              <div className="post-user-info">
+                <h4>{item.prenume} {item.nume}</h4>
+                <span className="post-time">
+                  {new Date(item.created_at).toLocaleDateString('ro-RO', {
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                  })}
+                </span>
+              </div>
+            </div>
+            
+            {item.caption && (
+              <p className="post-caption">{item.caption}</p>
+            )}
+            
+            <div className="post-image-container">
+              {item.status === 'inappropriate' ? (
+                <div className="blocked-content-wrapper">
+                  <img 
+                    src={`data:image/jpeg;base64,${item.image_base64}`}
+                    alt="Conținut blocat"
+                    className="blurred-image"
+                    style={{ filter: 'blur(15px)' }}
+                  />
+                  <div className="blocked-content-message">
+                    <p>Acest conținut a fost blocat deoarece încalcă regulile comunității</p>
                   </div>
                 </div>
-              ))
-            ) : (
-              <div className="no-feed">
-                <p>No posts to show. Follow more people to see their posts!</p>
-              </div>
-            )}
+              ) : (
+                <img 
+                  src={`data:image/jpeg;base64,${item.image_base64}`}
+                  alt={item.caption || 'Post image'}
+                  className="post-image"
+                  onClick={() => {
+                    setSelectedPhoto({
+                      image_base64: item.image_base64,
+                      caption: item.caption
+                    });
+                    setIsModalOpen(true);
+                  }}
+                />
+              )}
+            </div>
+            
+            <div className="post-actions">
+              <button className="like-btn">Like</button>
+              <button className="comment-btn">Comentează</button>
+              <button className="share-btn">Distribuie</button>
+            </div>
           </div>
-        )}
+        );
+      })
+    ) : (
+      <div className="no-feed">
+        <p>Nu există postări de afișat</p>
+      </div>
+    )}
+  </div>
+)}
         
         {activeTab === 'photos' && (
           <div className="photos-grid">
