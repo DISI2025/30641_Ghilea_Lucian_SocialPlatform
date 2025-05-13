@@ -16,6 +16,7 @@ class User(Base):
     id_poza_profil = Column(Integer, nullable=True)
     bio = Column(String, nullable=True)
     moderator = Column(Boolean, default=False)
+    is_validated = Column(Boolean, default=False)
 
 class Foto(Base):
     __tablename__ = "fotos"

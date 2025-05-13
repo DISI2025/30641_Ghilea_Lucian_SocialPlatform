@@ -93,3 +93,17 @@ def add_photos_to_album(data: AddPhotosToAlbum, db: Session = Depends(get_db)):
         db.add(relation)
     db.commit()
     return {"message": f"{len(data.photo_ids)} fotografii adăugate în albumul {data.id_album}"}
+
+@router.post("/validate-user/{user_id}")
+def validate_user(user_id: int, moderator_id: int, db: Session = Depends(get_db)):
+    moderator = db.query(User).filter(User.id_user == moderator_id).first()
+    if not moderator or not moderator.moderator:
+        raise HTTPException(status_code=403, detail="Acces interzis. Doar moderatorii pot valida conturi.")
+
+    user = db.query(User).filter(User.id_user == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="Utilizatorul nu a fost găsit")
+
+    user.is_validated = True
+    db.commit()
+    return {"message": f"Contul utilizatorului cu ID {user_id} a fost validat"}
