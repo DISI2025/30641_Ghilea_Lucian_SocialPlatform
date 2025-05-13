@@ -95,34 +95,36 @@ function AdminDashboard() {
   };
 
   const handleDeleteAccount = async (userIdToDelete) => {
-    if (!window.confirm('Are you sure you want to permanently delete this account?')) {
-      return;
+  if (!window.confirm('Sigur doriți să ștergeți acest cont? Acțiunea este permanentă!')) {
+    return;
+  }
+
+  try {
+    const response = await fetch(`http://127.0.0.1:8000/delete-user/${userIdToDelete}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        moderator_id: parseInt(userId)  // Ensure it's sent as integer
+      })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.detail || 'Eroare la ștergerea contului');
     }
 
-    try {
-      const response = await fetch(`http://127.0.0.1:8000/delete-user/${userIdToDelete}`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ moderator_id: userId })
-      });
-
-      if (response.ok) {
-        // Remove from search results if in search tab
-        setSearchResults(searchResults.filter(user => user.id !== userIdToDelete));
-        // Remove from accounts list if in accounts tab
-        setAccounts(accounts.filter(account => account.id_user !== userIdToDelete));
-        alert('Account deleted successfully');
-      } else {
-        const errorData = await response.json();
-        alert(errorData.detail || 'Failed to delete account');
-      }
-    } catch (error) {
-      console.error('Error deleting account:', error);
-      alert('Error deleting account');
-    }
-  };
+    // Update UI
+    setSearchResults(searchResults.filter(user => user.id !== userIdToDelete));
+    setAccounts(accounts.filter(account => account.id_user !== userIdToDelete));
+    alert('Contul a fost șters cu succes!');
+    
+  } catch (error) {
+    console.error('Eroare la ștergerea contului:', error);
+    alert(error.message || 'Eroare la ștergerea contului');
+  }
+};
 
   // User search functions
   const handleSearchUsers = async () => {
