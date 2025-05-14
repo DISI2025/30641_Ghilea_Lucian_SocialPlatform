@@ -78,19 +78,34 @@ const handleBlockPost = async (id_foto) => {  // Schimbă parametrul din postId 
   }
 };
 
-  const handleDeletePost = async (postId) => {
-    try {
-      const response = await fetch(`http://127.0.0.1:8000/posts/${postId}`, {
-        method: 'DELETE',
-      });
-      
-      if (response.ok) {
-        setPosts(posts.filter(post => post.id_foto !== postId));
+const handleDeletePost = async (id_foto) => {
+  if (!window.confirm('Sigur doriți să ștergeți această postare? Acțiunea este permanentă!')) {
+    return;
+  }
+
+  try {
+    const response = await fetch(
+      `http://127.0.0.1:8000/deleteByModerator/${id_foto}`,
+      {
+        method: 'PUT', // Conform endpoint-ului din backend
+        headers: { 'Content-Type': 'application/json' },
       }
-    } catch (error) {
-      console.error('Error deleting post:', error);
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.detail || 'Eroare la ștergerea postării');
     }
-  };
+
+    // Actualizăm starea eliminând postarea ștearsă
+    setPosts(posts.filter(post => post.id_foto !== id_foto));
+    
+    alert('Postarea a fost ștearsă cu succes!');
+  } catch (error) {
+    console.error('Eroare la ștergere:', error);
+    alert(`Eroare: ${error.message}`);
+  }
+};
 
   // Account validation functions
   const handleValidateAccount = async (userId, validate) => {
