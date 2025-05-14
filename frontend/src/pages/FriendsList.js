@@ -273,12 +273,12 @@ function FriendsList() {
                   </div>
                 </div>
                 <div className="friend-actions">
-                  <button className="message-btn">
+                  <Link Link to={`/chat/${userId}`} className="message-btn">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
                       <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/>
                     </svg>
                     Mesaj
-                  </button>
+                  </Link>
                   <button className="remove-btn">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
                       <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11H7v-2h10v2z"/>

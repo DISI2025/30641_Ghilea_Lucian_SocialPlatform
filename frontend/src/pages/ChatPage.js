@@ -173,7 +173,7 @@ function ChatPage() {
       const messageData = {
         id_receiver: numericFriendId,
         id_sender: numericUserId,
-        text: "Salut!",
+        text: "",
       };
 
       const response = await axios.post(`${API_URL}/messages/send`, messageData);
@@ -190,7 +190,7 @@ function ChatPage() {
         id_conversation: newConversationId,
         nume: friend?.nume || 'Unknown',
         prenume: friend?.prenume || 'User',
-        last_message: "Salut!",
+        last_message: "",
         last_message_at: response.data.sent_at, 
         poza_profil_base64: friend?.poza_profil_base64 || null,
       };
@@ -291,7 +291,9 @@ function ChatPage() {
                   </div>
                 ) : (
                   <>
-                    {messages.map(message => (
+                    {messages
+                    .filter(message => message.text && message.text.trim() !== '')
+                    .map(message => (
                       <div 
                         key={message.id} 
                         className={`message ${Number(message.id_sender) === userId ? 'me' : 'them'}`}
