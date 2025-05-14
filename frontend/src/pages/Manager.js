@@ -26,6 +26,7 @@ function AdminDashboard() {
           if (!postsResponse.ok) throw new Error('Failed to fetch posts');
           const postsData = await postsResponse.json();
           setPosts(postsData);
+          console.log(postsData)
         } 
         else if (activeTab === 'accounts') {
           const accountsResponse = await fetch('http://127.0.0.1:8000/notValidatedAccounts');
@@ -45,37 +46,66 @@ function AdminDashboard() {
     fetchData();
   }, [activeTab]);
 
-  // Post management functions
-  const handleBlockPost = async (postId) => {
-    try {
-      const response = await fetch(`http://127.0.0.1:8000/posts/${postId}/block`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-      });
-      
-      if (response.ok) {
-        setPosts(posts.map(post => 
-          post.id_foto === postId ? { ...post, status: 'inappropriate' } : post
-        ));
-      }
-    } catch (error) {
-      console.error('Error blocking post:', error);
-    }
-  };
+const handleBlockPost = async (id_foto) => {  // Schimbă parametrul din postId în id_foto
+  if (!window.confirm('Sigur doriți să blocați această postare?')) {
+    return;
+  }
 
-  const handleDeletePost = async (postId) => {
-    try {
-      const response = await fetch(`http://127.0.0.1:8000/posts/${postId}`, {
-        method: 'DELETE',
-      });
-      
-      if (response.ok) {
-        setPosts(posts.filter(post => post.id_foto !== postId));
+  try {
+    const response = await fetch(
+      `http://127.0.0.1:8000/markInappropriate/${id_foto}/${userId}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({}) // Body gol conform endpoint-ului
       }
-    } catch (error) {
-      console.error('Error deleting post:', error);
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.detail || 'Eroare la blocarea postării');
     }
-  };
+
+    // Actualizează starea folosind id_foto
+    setPosts(posts.map(post => 
+      post.id_foto === id_foto ? { ...post, status: 'inappropriate' } : post
+    ));
+
+    alert('Postarea a fost blocată cu succes!');
+  } catch (error) {
+    console.error('Eroare la blocare:', error);
+    alert(`Eroare: ${error.message}`);
+  }
+};
+
+const handleDeletePost = async (id_foto) => {
+  if (!window.confirm('Sigur doriți să ștergeți această postare? Acțiunea este permanentă!')) {
+    return;
+  }
+
+  try {
+    const response = await fetch(
+      `http://127.0.0.1:8000/deleteByModerator/${id_foto}`,
+      {
+        method: 'PUT', // Conform endpoint-ului din backend
+        headers: { 'Content-Type': 'application/json' },
+      }
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.detail || 'Eroare la ștergerea postării');
+    }
+
+    // Actualizăm starea eliminând postarea ștearsă
+    setPosts(posts.filter(post => post.id_foto !== id_foto));
+    
+    alert('Postarea a fost ștearsă cu succes!');
+  } catch (error) {
+    console.error('Eroare la ștergere:', error);
+    alert(`Eroare: ${error.message}`);
+  }
+};
 
   // Account validation functions
   const handleValidateAccount = async (userId, validate) => {
@@ -254,11 +284,11 @@ function AdminDashboard() {
                   <div className="post-actions">
                     {post.status !== 'inappropriate' && (
                       <button 
-                        className="block-btn"
-                        onClick={() => handleBlockPost(post.id_foto)}
-                      >
-                        Block Post
-                      </button>
+                            className="block-btn"
+                            onClick={() => handleBlockPost(post.id_foto)}
+                          >
+                            Block Post
+                          </button>
                     )}
                     <button 
                       className="delete-btn"
