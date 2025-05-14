@@ -399,9 +399,6 @@ def mark_photo_inappropriate(id_poza: int, id_utilizator: int, db: Session = Dep
     if not photo:
         raise HTTPException(status_code=404, detail="Fotografia nu exista")
 
-    if photo.id_user != id_utilizator:
-        raise HTTPException(status_code=403, detail="Fotografia nu apartine acestui utilizator")
-
     photo.status = "inappropriate"
     db.commit()
 

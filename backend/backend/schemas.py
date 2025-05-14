@@ -101,6 +101,7 @@ class MessageResponse(BaseModel):
 class NewsFeedItemSchema(BaseModel):
     nume: str
     prenume: str
+    id_foto: int
     caption: str
     created_at: datetime
     image_base64: str
