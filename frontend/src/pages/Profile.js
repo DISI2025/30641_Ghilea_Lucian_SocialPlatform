@@ -203,6 +203,9 @@ function Profile() {
               <Link to={`/friends/${userId}`} className="friends-btn">
                 Friends
               </Link>
+              <Link to={`/chat/${userId}`} className="friends-btn">
+                Chat
+              </Link>
             </div>
           ) : (
             <button 
