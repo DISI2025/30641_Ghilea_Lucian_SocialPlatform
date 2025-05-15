@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import './FriendsList.css';
+import { useNavigate } from 'react-router-dom';
 
 function FriendsList() {
   const [friends, setFriends] = useState([]);
@@ -10,18 +11,18 @@ function FriendsList() {
   const [activeTab, setActiveTab] = useState('friends');
   const [userSearchTerm, setUserSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState([]);
+  const [suggestedFriends, setSuggestedFriends] = useState([]);
+  const navigate = useNavigate();
   const [searchLoading, setSearchLoading] = useState(false);
   const { userId } = useParams();
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-      
         const friendsResponse = await fetch(`http://localhost:8000/getfriends/${userId}`);
         if (!friendsResponse.ok) throw new Error('Failed to fetch friends');
         const friendsData = await friendsResponse.json();
         
-      
         const formattedFriends = friendsData.map(friend => ({
           id: friend.id_user,
           name: `${friend.prenume || ''} ${friend.nume || ''}`.trim(),
@@ -36,11 +37,24 @@ function FriendsList() {
         const pendingResponse = await fetch(`http://localhost:8000/get_idling_friendrequest/${userId}`);
         if (!pendingResponse.ok) throw new Error('Failed to fetch pending requests');
         const pendingData = await pendingResponse.json();
-        
-      
+
+        const suggestedResponse = await fetch(`http://localhost:8000/suggest_friends/${userId}`);
+        if (suggestedResponse.ok) {
+          const suggestedData = await suggestedResponse.json();
+          const formattedSuggested = suggestedData.map(user => ({
+            id: user.id_user,
+            name: `${user.prenume || ''} ${user.nume || ''}`.trim(),
+            email: user.email || '',
+            avatar: user.image_base64
+              ? `data:image/jpeg;base64,${user.image_base64}`
+              : `https://ui-avatars.com/api/?name=${user.prenume || ''}+${user.nume || ''}&background=random`
+          }));
+          setSuggestedFriends(formattedSuggested);
+        }
+
         const formattedPending = pendingData.map(request => ({
           id: request.id_sender || request.id,
-          name: request.nume  || `User ${request.id_sender || request.id}`,
+          name: request.nume || `User ${request.id_sender || request.id}`,
           username: request.prenume || `user_${request.id_sender || request.id}`,
           email: request.email || '',
           avatar: request.avatar || `https://ui-avatars.com/api/?name=User+${request.id_sender || request.id}&background=random`
@@ -51,6 +65,7 @@ function FriendsList() {
         console.error('Error fetching data:', error);
         setFriends([]);
         setPendingRequests([]);
+        setSuggestedFriends([]);
       } finally {
         setIsLoading(false);
       }
@@ -119,6 +134,10 @@ function FriendsList() {
     }
   };
 
+  const handleSendSuggestedRequest = (email) => {
+    handleSendFriendRequest(email);
+  };
+
   const handleAcceptRequest = async (senderId) => {
     try {
       const response = await fetch(`http://localhost:8000/accept_friendrequest/${userId}/${senderId}`, {
@@ -168,6 +187,11 @@ function FriendsList() {
   const filteredPending = pendingRequests.filter(request =>
     request.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     request.username.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const filteredSuggested = suggestedFriends.filter(friend =>
+    friend.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    friend.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   if (isLoading) {
@@ -253,12 +277,18 @@ function FriendsList() {
           className={activeTab === 'pending' ? 'active' : ''}
           onClick={() => setActiveTab('pending')}
         >
-          Pending ({pendingRequests.length})
+          Cereri în așteptare ({pendingRequests.length})
+        </button>
+        <button 
+          className={activeTab === 'suggested' ? 'active' : ''}
+          onClick={() => setActiveTab('suggested')}
+        >
+          Sugestii ({suggestedFriends.length})
         </button>
       </div>
 
       <div className="friends-list">
-        {activeTab === 'friends' ? (
+        {activeTab === 'friends' && (
           filteredFriends.length > 0 ? (
             filteredFriends.map(friend => (
               <div key={friend.id} className="friend-card">
@@ -296,7 +326,9 @@ function FriendsList() {
               <p>Încearcă alt termen de căutare</p>
             </div>
           )
-        ) : (
+        )}
+
+        {activeTab === 'pending' && (
           filteredPending.length > 0 ? (
             filteredPending.map(request => (
               <div key={request.id} className="friend-card">
@@ -305,7 +337,8 @@ function FriendsList() {
                     <img src={request.avatar} alt={request.name} />
                   </div>
                   <div className="friend-details">
-                    <Link to={`/profile/${request.username}`} className="friend-name">{request.name} {request.username}</Link>
+                    <Link to={`/profile/${request.username}`} className="friend-name">{request.name}</Link>
+                    <p className="friend-username">@{request.username}</p>
                   </div>
                 </div>
                 <div className="friend-actions">
@@ -336,6 +369,47 @@ function FriendsList() {
                 <path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
               </svg>
               <h3>Nu există cereri de prietenie în așteptare</h3>
+            </div>
+          )
+        )}
+
+        {activeTab === 'suggested' && (
+          filteredSuggested.length > 0 ? (
+            <div className="suggested-friends-section">
+              <h2>Sugestii de prietenie</h2>
+              <div className="suggested-friends-list">
+                {filteredSuggested.map((user) => (
+                  <div key={user.id} className="suggested-friend-card">
+                    <img src={user.avatar} alt={user.name} className="suggested-friend-avatar" />
+                    <div className="suggested-friend-info">
+                      <h4>{user.name}</h4>
+                      <p>{user.email}</p>
+                    </div>
+                    <div className="suggested-actions">
+                      <button 
+                        className="view-profile-btn"
+                        onClick={() => navigate(`/profile/${user.id}`)}
+                      >
+                        Vezi profil
+                      </button>
+                      <button 
+                        className="send-request-btn"
+                        onClick={() => handleSendSuggestedRequest(user.email)}
+                      >
+                        Trimite cerere
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className="no-friends">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+              </svg>
+              <h3>Nu există sugestii de prietenie</h3>
+              <p>Încearcă mai târziu</p>
             </div>
           )
         )}
