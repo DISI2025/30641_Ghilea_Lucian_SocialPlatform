@@ -41,7 +41,7 @@ app.include_router(users.router, prefix="")
 app.include_router(albums.router, prefix="")
 app.include_router(messages.router, prefix="")
 
-driver = GraphDatabase.driver("bolt://localhost:7687", auth=("neo4j", "test"))
+driver = GraphDatabase.driver("bolt://localhost:7687", auth=("neo4j", "qwertyuiop"))
 
 def get_db():
     db = SessionLocal()

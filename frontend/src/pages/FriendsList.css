@@ -357,3 +357,64 @@
 .send-request-btn:hover {
   background-color: #36a420;
 }
+.suggested-friends-section {
+  margin: 2rem 0;
+}
+
+.suggested-friends-section h2 {
+  margin-bottom: 1rem;
+  color: #333;
+}
+
+.suggested-friends-list {
+  display: flex;
+  overflow-x: auto;
+  gap: 1rem;
+  padding-bottom: 0.5rem;
+}
+
+.suggested-friend-card {
+  min-width: 160px;
+  background-color: #fff;
+  padding: 1rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.suggested-friend-avatar {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-bottom: 0.5rem;
+}
+
+.suggested-friend-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 0.5rem;
+}
+
+.suggested-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.suggested-actions button {
+  padding: 0.4rem 0.6rem;
+  font-size: 13px;
+  background-color: #1877f2;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.suggested-actions button:hover {
+  background-color: #125ecb;
+}
