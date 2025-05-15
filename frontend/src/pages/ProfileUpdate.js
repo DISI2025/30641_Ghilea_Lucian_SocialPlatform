@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import "./ProfileUpdate.css";
 
 function EditProfile() {
-  const { userId } = useParams();
+  const { userId} = useParams();
   const navigate = useNavigate();
   const [profile, setProfile] = useState({
     nume: "",
@@ -17,16 +17,18 @@ function EditProfile() {
 
   useEffect(() => {
     if (!userId) {
-    //   setMessage("Error: No user ID provided. Redirecting...");
-    //   setTimeout(() => navigate("/"), 2000);
-    //   return;
+      setMessage("ID utilizator lipsă");
+      setIsLoadingData(false);
+      return;
     }
 
     const fetchProfile = async () => {
       try {
         const response = await fetch(`http://localhost:8000/profile/${userId}`);
-        if (!response.ok) throw new Error("Failed to fetch profile");
+        
+        if (!response.ok) throw new Error("Nu s-au putut încărca datele profilului");
         const data = await response.json();
+        
         setProfile({
           nume: data.nume || "",
           prenume: data.prenume || "",
@@ -41,7 +43,7 @@ function EditProfile() {
     };
 
     fetchProfile();
-  }, [userId, navigate]);
+  }, [userId]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -55,7 +57,7 @@ function EditProfile() {
     e.preventDefault();
     
     if (!userId) {
-      setMessage("Error: User ID is missing");
+      setMessage("Eroare: ID utilizator lipsă");
       return;
     }
 
@@ -65,22 +67,49 @@ function EditProfile() {
     try {
       const response = await fetch(`http://localhost:8000/profile/${userId}`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json"
+        },
         body: JSON.stringify(profile),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.detail || "Update failed");
+        throw new Error(errorData.detail || "Actualizarea profilului a eșuat");
       }
       
       setMessage("Profil actualizat cu succes!");
       setTimeout(() => navigate(`/profile/${userId}`), 1500);
     } catch (err) {
-      console.error("Update error:", err);
+      console.error("Eroare actualizare:", err);
       setMessage(err.message || "Eroare la actualizarea profilului");
     } finally {
       setIsLoading(false);
+    }     
+  };
+
+  const handleDeleteAccount = async () => {
+    if (window.confirm("Ești sigur că vrei să ștergi contul? Această acțiune este permanentă!")) {
+      setIsLoading(true);
+      try {
+        const response = await fetch(`http://localhost:8000/delete-own-account/${userId}`, {
+          method: "DELETE",
+          headers: {
+          "Content-Type": "application/json",  
+        },
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.detail || "Ștergerea contului a eșuat");
+        }
+
+        navigate('/');
+      } catch (err) {
+        setMessage(err.message || "Eroare la ștergerea contului");
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
@@ -150,20 +179,28 @@ function EditProfile() {
           <button 
             type="submit" 
             className="submit-btn"
-            disabled={isLoading || !userId}
+            disabled={isLoading}
           >
             {isLoading ? 'Se actualizează...' : 'Actualizează Profilul'}
           </button>
         </form>
         
         {message && (
-          <div className={`message ${message.includes("Error") ? "error" : "success"}`}>
+          <div className={`message ${message.includes("Eroare") ? "error" : "success"}`}>
             {message}
           </div>
         )}
 
-        <div className="back-link">
-          <button onClick={() => navigate(-1)}>Înapoi la Profil</button>
+        <div className="profile-actions">
+          <button onClick={() => navigate(-1)} className="back-btn">Înapoi la Profil</button>
+          
+          <button 
+            onClick={handleDeleteAccount}
+            className="delete-account-btn"
+            disabled={isLoading}
+          >
+            Șterge Contul
+          </button>
         </div>
       </div>
     </div>

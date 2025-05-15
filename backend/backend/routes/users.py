@@ -118,63 +118,48 @@ def delete_user(user_id: int, moderator_id: int = Body(..., embed=True), db: Ses
     if not user:
         raise HTTPException(status_code=404, detail="Utilizatorul nu există")
 
-    # Șterge relațiile din album_photos
     db.query(AlbumPhoto).filter(AlbumPhoto.id_foto.in_(
         db.query(Foto.id).filter(Foto.id_user == user_id)
     )).delete(synchronize_session=False)
 
-    # Șterge fotografiile utilizatorului
     db.query(Foto).filter(Foto.id_user == user_id).delete(synchronize_session=False)
 
-    # Șterge cereri de prietenie trimise și primite
     db.query(FriendRequest).filter(
         (FriendRequest.id_sender == user_id) | (FriendRequest.id_receiver == user_id)
     ).delete(synchronize_session=False)
-
-    # Șterge prieteniile în care este implicat
     db.query(Friendships).filter(
         (Friendships.id_user1 == user_id) | (Friendships.id_user2 == user_id)
     ).delete(synchronize_session=False)
-
-    # Șterge mesajele trimise sau primite
     db.query(Message).filter(
         (Message.id_sender == user_id) | (Message.id_receiver == user_id)
     ).delete(synchronize_session=False)
 
-    # Șterge conversațiile în care este implicat
     db.query(Conversation).filter(
         (Conversation.id_user1 == user_id) | (Conversation.id_user2 == user_id)
     ).delete(synchronize_session=False)
 
-    # Șterge contul utilizatorului
     db.delete(user)
     db.commit()
 
     return {"message": f"Contul utilizatorului cu ID {user_id} a fost șters."}
 
 
-@router.delete("/delete-own-account")
-def delete_own_account(Authorization: str = Header(...), db: Session = Depends(get_db)):
-    token = Authorization.replace("Bearer ", "")
-    user_id = get_user_id_by_token(token)
-    if not user_id:
-        raise HTTPException(status_code=401, detail="Token invalid sau expirat")
-
-    # Ștergere date asociate
-    db.query(Message).filter((Message.id_sender == user_id) | (Message.id_receiver == user_id)).delete()
-    db.query(Conversation).filter((Conversation.id_user1 == user_id) | (Conversation.id_user2 == user_id)).delete()
+@router.delete("/delete-own-account/{id_user}")
+def delete_own_account(id_user: int, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.id_user == id_user).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="Utilizatorul nu a fost găsit")
+    db.query(Message).filter((Message.id_sender == id_user) | (Message.id_receiver == id_user)).delete()
+    db.query(Conversation).filter((Conversation.id_user1 == id_user) | (Conversation.id_user2 == id_user)).delete()
     db.query(AlbumPhoto).filter(AlbumPhoto.id_foto.in_(
-        db.query(Foto.id).filter(Foto.id_user == user_id)
+        db.query(Foto.id).filter(Foto.id_user == id_user)
     )).delete()
-    db.query(Foto).filter(Foto.id_user == user_id).delete()
-    db.query(FriendRequest).filter((FriendRequest.id_sender == user_id) | (FriendRequest.id_receiver == user_id)).delete()
-    db.query(Friendships).filter((Friendships.id_user1 == user_id) | (Friendships.id_user2 == user_id)).delete()
+    db.query(Foto).filter(Foto.id_user == id_user).delete()
+    db.query(Album).filter(Album.id_user == id_user).delete()
+    db.query(FriendRequest).filter((FriendRequest.id_sender == id_user) | (FriendRequest.id_receiver == id_user)).delete()
+    db.query(Friendships).filter((Friendships.id_user1 == id_user) | (Friendships.id_user2 == id_user)).delete()
 
-    # Ștergere cont
-    db.query(User).filter(User.id_user == user_id).delete()
+    db.query(User).filter(User.id_user == id_user).delete()
     db.commit()
 
-    # Invalidare sesiune
-    delete_session(token)
-
-    return {"message": "Contul a fost sters cu succes"}
+    return {"message": f"Contul utilizatorului cu ID {id_user} a fost sters cu succes"}
