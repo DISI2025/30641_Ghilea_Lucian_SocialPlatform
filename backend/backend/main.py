@@ -72,19 +72,69 @@ def get_profile(id_user: int, db: Session = Depends(get_db)):
     cached = get_cached_profile(id_user)
     if cached:
         return cached
+    user = (
+        db.query(models.User, models.Foto)
+        .outerjoin(models.Foto, models.User.id_poza_profil == models.Foto.id)
+        .filter(models.User.id_user == id_user)
+        .first()
+    )
 
-    user = db.query(models.User).filter(models.User.id_user == id_user).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="Userul nu a fost găsit")
+
+    user_data, foto = user
+
+    if foto and foto.image_data:
+        image_base64 = base64.b64encode(foto.image_data).decode("utf-8")
+    else:
+        image_base64 = ""
+
+    response_data = {
+        "id_user": user_data.id_user,
+        "nume": user_data.nume,
+        "prenume": user_data.prenume,
+        "email": user_data.email,
+        "data_nasterii": user_data.data_nasterii,
+        "bio": user_data.bio,
+        "image_base64": image_base64
+    }
+
+    set_cached_profile(id_user, response_data)
+    return response_data
+
+def get_profile(id_user: int, db: Session = Depends(get_db)):
+    cached = get_cached_profile(id_user)
+    if cached:
+        return cached
+
+    # JOIN cu poza de profil
+    user = (
+        db.query(models.User, models.Foto)
+        .outerjoin(models.Foto, models.User.id_poza_profil == models.Foto.id)
+        .filter(models.User.id_user == id_user)
+        .first()
+    )
+
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
+    user_data, foto = user
+
+    if foto and foto.image_data:
+        image_base64 = base64.b64encode(foto.image_data).decode("utf-8")
+    else:
+        image_base64 = ""  # opțional: imagine default
+
     response_data = {
-        "id_user": user.id_user,
-        "nume": user.nume,
-        "prenume": user.prenume,
-        "email": user.email,
-        "data_nasterii": user.data_nasterii,
-        "bio": user.bio
+        "id_user": user_data.id_user,
+        "nume": user_data.nume,
+        "prenume": user_data.prenume,
+        "email": user_data.email,
+        "data_nasterii": user_data.data_nasterii,
+        "bio": user_data.bio,
+        "image_base64": image_base64
     }
+
     set_cached_profile(id_user, response_data)
     return response_data
 
