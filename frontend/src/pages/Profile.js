@@ -164,7 +164,7 @@ function Profile() {
       <div className="profile-header">
         <div className="profile-avatar">
           <img 
-            src={profile.avatar || defaultAvatar} 
+            src={profile.image_base64 ? `data:image/jpeg;base64,${profile.image_base64}` : defaultAvatar}
             alt={profile.name}
             onError={(e) => {
               e.target.src = defaultAvatar;
