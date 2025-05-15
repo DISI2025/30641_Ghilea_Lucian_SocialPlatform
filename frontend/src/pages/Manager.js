@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import './Profile.css';
+import './Manager.css';
 
 function AdminDashboard() {
   const [activeTab, setActiveTab] = useState('posts');
@@ -107,22 +107,35 @@ const handleDeletePost = async (id_foto) => {
   }
 };
 
-  // Account validation functions
-  const handleValidateAccount = async (userId, validate) => {
-    try {
-      const response = await fetch(`http://127.0.0.1:8000/validateAccount/${userId}`, {
-        method: 'PUT',
+// Account validation function
+const handleValidateAccount = async (userIdToValidate) => {
+  if (!window.confirm('Are you sure you want to validate this account?')) {
+    return;
+  }
+
+  try {
+    // Send moderator_id as a query parameter
+    const response = await fetch(
+      `http://127.0.0.1:8000/validate-user/${userIdToValidate}?moderator_id=${parseInt(userId)}`,
+      {
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ validate })
-      });
-      
-      if (response.ok) {
-        setAccounts(accounts.filter(account => account.id_user !== userId));
       }
-    } catch (error) {
-      console.error('Error validating account:', error);
+    );
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.detail || 'Error validating account');
     }
-  };
+
+    // Update UI
+    setAccounts(accounts.filter(account => account.id_user !== userIdToValidate));
+    alert('Account validated successfully!');
+  } catch (error) {
+    console.error('Validation error:', error);
+    alert(error.message || 'Error validating account');
+  }
+};
 
   const handleDeleteAccount = async (userIdToDelete) => {
   if (!window.confirm('Sigur doriți să ștergeți acest cont? Acțiunea este permanentă!')) {
@@ -326,25 +339,27 @@ const handleDeletePost = async (id_foto) => {
                       <div className="account-details">
                         <h3>{account.prenume} {account.nume}</h3>
                         <p>{account.email}</p>
+                        <p className="account-status">
+                          Status: {account.is_validated ? 'Validated' : 'Pending'}
+                        </p>
                         <button 
                           className="view-profile-btn"
                           onClick={() => navigate(`/profile/${account.id_user}`)}
                         >
                           View Profile
                         </button>
-                        
                       </div>
                     </div>
                     <div className="account-actions">
                       <button 
                         className="validate-btn"
-                        onClick={() => handleValidateAccount(account.id_user, true)}
+                        onClick={() => handleValidateAccount(account.id_user)}
                       >
                         Validate
                       </button>
                       <button 
                         className="reject-btn"
-                        onClick={() => handleValidateAccount(account.id_user, false)}
+                        onClick={() => handleDeleteAccount(account.id_user)}
                       >
                         Reject
                       </button>
