@@ -226,7 +226,6 @@ const handleValidateAccount = async (userIdToValidate) => {
     <div className="profile-container">
       <div className="profile-header">
         <h1>Admin Dashboard</h1>
-        <p className="username">Administration Panel</p>
       </div>
       
       <div className="profile-content">
