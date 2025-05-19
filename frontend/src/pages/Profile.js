@@ -20,6 +20,7 @@ function Profile() {
   const [albums, setAlbums] = useState([]);
   const [newAlbumName, setNewAlbumName] = useState('');
   const [showCreateAlbumForm, setShowCreateAlbumForm] = useState(false);
+  const [isValidated, setIsValidated] = useState(false);
 
   const defaultAvatar = 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png';
   const defaultPostImage = 'https://cdn.pixabay.com/photo/2017/11/10/05/24/add-2935429_960_720.png';
@@ -33,6 +34,7 @@ function Profile() {
         const data = await response.json();
         setProfile(data);
         setIsFollowing(data.isFollowing || false);
+        setIsValidated(data.validated || false);
       } catch (error) {
         console.error(error);
       } finally {
@@ -158,6 +160,20 @@ function Profile() {
 
   if (isLoading) return <div className="loading">Loading profile...</div>;
   if (!profile) return <div className="error">Profile not found</div>;
+
+  if (!isValidated) {
+    return (
+      <div className="profile-container">
+        <div className="validation-message">
+          <h2>Contul nu este validat încă</h2>
+          <p>Acest profil nu poate fi afișat deoarece contul nu a fost validat.</p>
+          {isCurrentUser && (
+            <p>Te rugăm să verifici email-ul pentru link-ul de validare sau contactează administratorul.</p>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="profile-container">
