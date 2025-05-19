@@ -101,6 +101,7 @@ def get_profile(id_user: int, db: Session = Depends(get_db)):
     }
 
     set_cached_profile(id_user, response_data)
+    
     return response_data
 
 def get_profile(id_user: int, db: Session = Depends(get_db)):
