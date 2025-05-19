@@ -56,7 +56,8 @@ def login(credentials: UserLogin, db: Session = Depends(get_db)):
         "message": "Autentificare reușită",
         "token": token,
         "user_id": user.id_user,
-        "moderator": user.moderator
+        "moderator": user.moderator,
+        "validated": user.is_validated
     }
 
 
