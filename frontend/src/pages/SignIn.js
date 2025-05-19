@@ -30,9 +30,12 @@ function SignIn() {
         setMessage("Autentificare reușită!");
         
         if (data.user_id) {
-        
-          navigate(`/profile/${data.user_id}`);
-        }
+             if (data.moderator) {
+              navigate(`/moderator/${data.user_id}`);
+            } else {
+              navigate(`/profile/${data.user_id}`);
+            }
+  }
       })
       .catch((err) => {
         console.error(err);
