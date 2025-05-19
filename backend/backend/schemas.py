@@ -23,6 +23,7 @@ class UserProfileResponse(BaseModel):
     data_nasterii: Optional[date]
     bio: Optional[str]
     image_base64: Optional[str]
+    is_validated: Optional[bool]
 
 class UserCreate(BaseModel):
     nume: str

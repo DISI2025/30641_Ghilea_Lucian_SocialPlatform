@@ -96,7 +96,8 @@ def get_profile(id_user: int, db: Session = Depends(get_db)):
         "email": user_data.email,
         "data_nasterii": user_data.data_nasterii,
         "bio": user_data.bio,
-        "image_base64": image_base64
+        "image_base64": image_base64,
+        "is_validated": user_data.is_validated
     }
 
     set_cached_profile(id_user, response_data)
